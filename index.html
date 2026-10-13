@@ -288,7 +288,7 @@
     <script>
         // --- CONFIGURATION SUPABASE ---
         const SUPABASE_URL = 'https://qtlgzkqopptzvcnxseck.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjE0NzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjEwNzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
         
         let supabaseClient = null;
         if (typeof supabase !== 'undefined' && SUPABASE_URL !== 'VOTRE_SUPABASE_URL') {
@@ -386,7 +386,22 @@
                     checkUserSession();
                 }
             } catch (err) {
-                errDiv.innerText = err.message || "Une erreur est survenue lors de l'authentification.";
+                // Traduction des erreurs courantes de Supabase en français
+                let errorMsg = err.message || "";
+                
+                if (errorMsg.includes("Invalid login credentials")) {
+                    errorMsg = "E-mail ou mot de passe incorrect.";
+                } else if (errorMsg.includes("Email not confirmed")) {
+                    errorMsg = "Votre e-mail n'a pas encore été confirmé.";
+                } else if (errorMsg.includes("Password should be at least")) {
+                    errorMsg = "Le mot de passe doit contenir au moins 8 caractères.";
+                } else if (errorMsg.includes("User already registered")) {
+                    errorMsg = "Un compte existe déjà avec cette adresse e-mail.";
+                } else if (errorMsg.includes("rate limit")) {
+                    errorMsg = "Trop de tentatives de connexion. Veuillez réessayer plus tard.";
+                }
+
+                errDiv.innerText = errorMsg;
                 errDiv.classList.remove('hidden');
             } finally {
                 spinner.classList.add('hidden');
