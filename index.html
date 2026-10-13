@@ -33,7 +33,7 @@
                 <p id="auth-subtitle" class="text-slate-500 dark:text-slate-400 text-sm">Gestion des clés en temps réel</p>
             </div>
 
-            <!-- Formulaire Unique (Connexion / Inscription) -->
+            <!-- Formulaire Unique -->
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
@@ -44,8 +44,8 @@
                     <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
                 </div>
                 
-                <div id="auth-error" class="hidden text-red-500 dark:text-red-400 text-sm text-center font-medium bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
-                <div id="auth-success" class="hidden text-emerald-600 dark:text-emerald-400 text-sm text-center font-medium bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded border border-emerald-200 dark:border-emerald-900"></div>
+                <div id="auth-error" class="hidden text-red-500 dark:text-red-400 text-sm text-center font-medium bg-red-50 dark:bg-red-950/40 p-2.5 rounded border border-red-200 dark:border-red-900"></div>
+                <div id="auth-success" class="hidden text-emerald-600 dark:text-emerald-400 text-sm text-center font-medium bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded border border-emerald-200 dark:border-emerald-900"></div>
                 
                 <button type="submit" id="auth-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-lg font-medium transition shadow-lg flex items-center justify-center gap-2">
                     <span id="auth-btn-text">Se connecter</span>
@@ -95,6 +95,12 @@
                 <button type="button" onclick="switchTab('loans')" id="nav-loans" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <i class="fa-solid fa-hand-holding w-5"></i> Emprunts en cours
                 </button>
+                <button type="button" onclick="switchTab('users')" id="nav-users" class="hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-users w-5"></i> Utilisateurs
+                    </div>
+                    <span id="pending-badge" class="hidden bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
             </nav>
 
             <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
@@ -119,6 +125,7 @@
 
         <!-- Contenu Principal -->
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+            <!-- Dashboard -->
             <section id="tab-dashboard" class="space-y-6">
                 <h2 class="text-2xl font-bold">Tableau de bord</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
@@ -137,6 +144,7 @@
                 </div>
             </section>
 
+            <!-- Clés -->
             <section id="tab-keys" class="hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl font-bold">Gestion des Clés</h2>
@@ -159,6 +167,7 @@
                 </div>
             </section>
 
+            <!-- Emprunts -->
             <section id="tab-loans" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">Emprunts en cours</h2>
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
@@ -175,10 +184,27 @@
                     </table>
                 </div>
             </section>
+
+            <!-- Gestion Utilisateurs (Admin seulement) -->
+            <section id="tab-users" class="hidden space-y-6">
+                <h2 class="text-2xl font-bold">Validation & Gestion des Utilisateurs</h2>
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
+                            <tr>
+                                <th class="p-4">E-mail</th>
+                                <th class="p-4">Statut / Rôle</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- Modal Clé -->
+    <!-- Modals -->
     <div id="key-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
             <h3 id="modal-title" class="text-lg font-bold mb-4">Ajouter une clé</h3>
@@ -200,7 +226,6 @@
         </div>
     </div>
 
-    <!-- Modal Contact Admin -->
     <div id="contact-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
             <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-envelope text-indigo-500 mr-2"></i>Contact Administrateur</h3>
@@ -232,66 +257,38 @@
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
-        const ALLOWED_DOMAIN = '@iliad-free.fr'; // Domaine d'entreprise autorisé
+        const ALLOWED_DOMAIN = '@iliad-free.fr';
         let isRegistering = false;
         let currentUser = null;
         let keys = [];
+        let profiles = [];
 
-        // --- GESTION DU THÈME CLAIR / SOMBRE ---
+        // --- GESTION DU THÈME ---
         let currentTheme = localStorage.getItem('theme') || 'dark';
 
         function applyTheme(theme) {
             currentTheme = theme;
             localStorage.setItem('theme', theme);
             const htmlEl = document.documentElement;
-            
-            if (theme === 'dark') {
-                htmlEl.classList.add('dark');
-            } else {
-                htmlEl.classList.remove('dark');
-            }
+            if (theme === 'dark') { htmlEl.classList.add('dark'); } else { htmlEl.classList.remove('dark'); }
 
-            // Mise à jour des icônes
             const iconClass = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-            
             ['theme-icon-auth', 'theme-icon-mobile', 'theme-icon-sidebar'].forEach(id => {
                 const icon = document.getElementById(id);
-                if (icon) {
-                    icon.className = iconClass;
-                }
+                if (icon) icon.className = iconClass;
             });
         }
-
-        function toggleTheme() {
-            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            applyTheme(nextTheme);
-        }
-
-        // Initialize theme on load
+        function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
         applyTheme(currentTheme);
 
-        // --- AUTHENTIFICATION & BASCULEMENT DE MODE ---
+        // --- AUTHENTIFICATION ---
         function toggleAuthMode() {
             isRegistering = !isRegistering;
-            
-            const titleEl = document.getElementById('auth-title');
-            const btnTextEl = document.getElementById('auth-btn-text');
-            const toggleLinkEl = document.getElementById('auth-toggle-link');
-            const errDiv = document.getElementById('auth-error');
-            const succDiv = document.getElementById('auth-success');
-
-            errDiv.classList.add('hidden');
-            succDiv.classList.add('hidden');
-
-            if (isRegistering) {
-                titleEl.innerText = "Inscription Clés CLR";
-                btnTextEl.innerText = "S'inscrire";
-                toggleLinkEl.innerText = "Déjà un compte ? Se connecter";
-            } else {
-                titleEl.innerText = "Connexion Clés CLR";
-                btnTextEl.innerText = "Se connecter";
-                toggleLinkEl.innerText = "Pas encore de compte ? S'inscrire";
-            }
+            document.getElementById('auth-title').innerText = isRegistering ? "Inscription Clés CLR" : "Connexion Clés CLR";
+            document.getElementById('auth-btn-text').innerText = isRegistering ? "S'inscrire" : "Se connecter";
+            document.getElementById('auth-toggle-link').innerText = isRegistering ? "Déjà un compte ? Se connecter" : "Pas encore de compte ? S'inscrire";
+            document.getElementById('auth-error').classList.add('hidden');
+            document.getElementById('auth-success').classList.add('hidden');
         }
 
         async function handleAuthSubmit(e) {
@@ -306,7 +303,7 @@
             succDiv.classList.add('hidden');
 
             if (!supabaseClient) {
-                errDiv.innerText = "Veuillez d'abord renseigner vos clés Supabase dans le code (SUPABASE_URL et SUPABASE_ANON_KEY).";
+                errDiv.innerText = "Veuillez d'abord renseigner vos clés Supabase dans le code.";
                 errDiv.classList.remove('hidden');
                 return;
             }
@@ -321,16 +318,24 @@
 
                     const { data, error } = await supabaseClient.auth.signUp({ email, password });
                     if (error) throw error;
-                    
+
                     if (data.user) {
-                        await supabaseClient.from('profiles').upsert([{ id: data.user.id, email: email, role: 'user' }]);
-                        succDiv.innerText = "Inscription réussie ! Connexion en cours...";
+                        // Inscription par défaut avec le rôle 'pending'
+                        await supabaseClient.from('profiles').upsert([{ id: data.user.id, email: email, role: 'pending' }]);
+                        succDiv.innerText = "Inscription enregistrée ! Votre compte est en attente de validation par un administrateur.";
                         succDiv.classList.remove('hidden');
-                        setTimeout(() => checkUserSession(), 1000);
                     }
                 } else {
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
+
+                    // Vérifier si le compte est validé
+                    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.user.id).single();
+                    if (profile && profile.role === 'pending') {
+                        await supabaseClient.auth.signOut();
+                        throw new Error("Votre compte est toujours en attente d'approbation par l'administrateur.");
+                    }
+
                     checkUserSession();
                 }
             } catch (err) {
@@ -347,40 +352,44 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-                currentUser = { 
-                    email: session.user.email, 
-                    role: profile ? profile.role : 'user' 
-                };
                 
+                if (profile && profile.role === 'pending') {
+                    await supabaseClient.auth.signOut();
+                    alert("Votre compte est en attente de validation par un administrateur.");
+                    return;
+                }
+
+                currentUser = { email: session.user.email, role: profile ? profile.role : 'user' };
+
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
                 document.getElementById('user-display-email').innerText = currentUser.email;
                 document.getElementById('user-display-role').innerText = currentUser.role;
 
-                if (currentUser.role === 'user') {
-                    document.getElementById('nav-dashboard').classList.add('hidden');
-                    switchTab('keys');
-                } else {
+                if (currentUser.role === 'admin') {
                     document.getElementById('nav-dashboard').classList.remove('hidden');
+                    document.getElementById('nav-users').classList.remove('hidden');
+                    loadProfilesRealtime();
                     switchTab('dashboard');
+                } else {
+                    document.getElementById('nav-dashboard').classList.add('hidden');
+                    document.getElementById('nav-users').classList.add('hidden');
+                    switchTab('keys');
                 }
                 loadKeysRealtime();
             }
         }
 
         async function logout() {
-            if (supabaseClient) {
-                await supabaseClient.auth.signOut();
-            }
+            if (supabaseClient) await supabaseClient.auth.signOut();
             location.reload();
         }
 
-        // --- CHARGEMENT ET RÉCEPTION TEMPS RÉEL DE SUPABASE ---
+        // --- GESTION DES CLÉS & PROFILS TEMPS RÉEL ---
         async function loadKeysRealtime() {
             if (!supabaseClient) return;
-
-            const { data, error } = await supabaseClient.from('keys').select('*');
-            if (!error && data) keys = data;
+            const { data } = await supabaseClient.from('keys').select('*');
+            if (data) keys = data;
             render();
 
             supabaseClient.channel('public:keys')
@@ -390,15 +399,38 @@
                         const index = keys.findIndex(k => k.id === payload.new.id);
                         if (index !== -1) keys[index] = payload.new;
                     }
-                    if (payload.eventType === 'DELETE') {
-                        keys = keys.filter(k => k.id !== payload.old.id);
-                    }
+                    if (payload.eventType === 'DELETE') keys = keys.filter(k => k.id !== payload.old.id);
                     render();
-                })
-                .subscribe();
+                }).subscribe();
         }
 
-        // --- ACTIONS GESTION DES CLÉS ---
+        async function loadProfilesRealtime() {
+            if (!supabaseClient) return;
+            const { data } = await supabaseClient.from('profiles').select('*');
+            if (data) profiles = data;
+            renderUsers();
+
+            supabaseClient.channel('public:profiles')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+                    supabaseClient.from('profiles').select('*').then(({ data }) => {
+                        if (data) { profiles = data; renderUsers(); }
+                    });
+                }).subscribe();
+        }
+
+        // --- GESTION DES UTILISATEURS PAR L'ADMIN ---
+        async function updateUserRole(userId, newRole) {
+            if (!supabaseClient) return;
+            await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
+        }
+
+        async function deleteUserProfile(userId) {
+            if (confirm("Voulez-vous rejeter et supprimer cet utilisateur ?")) {
+                if (supabaseClient) await supabaseClient.from('profiles').delete().eq('id', userId);
+            }
+        }
+
+        // --- ACTIONS SUR LES CLÉS ---
         async function saveKey(e) {
             e.preventDefault();
             const id = document.getElementById('key-id').value;
@@ -416,10 +448,8 @@
         }
 
         async function deleteKey(id) {
-            if (confirm("Voulez-vous vraiment supprimer cette clé ?")) {
-                if (supabaseClient) {
-                    await supabaseClient.from('keys').delete().eq('id', id);
-                }
+            if (confirm("Voulez-vous supprimer cette clé ?") && supabaseClient) {
+                await supabaseClient.from('keys').delete().eq('id', id);
             }
         }
 
@@ -434,32 +464,25 @@
             await supabaseClient.from('keys').update({ status: 'disponible', borrowed_by: null, date: null }).eq('id', id);
         }
 
-        // --- INTERACTION ET RENDER UI ---
-        function toggleMobileMenu() { 
-            document.getElementById('sidebar').classList.toggle('hidden'); 
-        }
+        // --- RENDER ET NAVIGATION ---
+        function toggleMobileMenu() { document.getElementById('sidebar').classList.toggle('hidden'); }
 
         function switchTab(tab) {
-            ['dashboard', 'keys', 'loans'].forEach(t => {
+            ['dashboard', 'keys', 'loans', 'users'].forEach(t => {
                 const section = document.getElementById(`tab-${t}`);
                 const navBtn = document.getElementById(`nav-${t}`);
                 if (section) section.classList.add('hidden');
-                if (navBtn) {
-                    navBtn.classList.remove('bg-indigo-600', 'text-white');
-                    navBtn.classList.add('hover:bg-slate-100', 'dark:hover:bg-slate-800/60');
-                }
+                if (navBtn) navBtn.classList.remove('bg-indigo-600', 'text-white');
             });
 
             const activeSection = document.getElementById(`tab-${tab}`);
             const activeNavBtn = document.getElementById(`nav-${tab}`);
             if (activeSection) activeSection.classList.remove('hidden');
-            if (activeNavBtn) {
-                activeNavBtn.classList.add('bg-indigo-600', 'text-white');
-                activeNavBtn.classList.remove('hover:bg-slate-100', 'dark:hover:bg-slate-800/60');
-            }
+            if (activeNavBtn) activeNavBtn.classList.add('bg-indigo-600', 'text-white');
 
             if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
             render();
+            if (tab === 'users') renderUsers();
         }
 
         function openKeyModal(id = null) {
@@ -479,23 +502,59 @@
             document.getElementById('key-modal').classList.remove('hidden');
         }
 
-        function closeKeyModal() { 
-            document.getElementById('key-modal').classList.add('hidden'); 
-        }
-
-        function openContactModal() { 
-            document.getElementById('contact-modal').classList.remove('hidden'); 
-        }
-
-        function closeContactModal() { 
-            document.getElementById('contact-modal').classList.add('hidden'); 
-            document.getElementById('contact-success').classList.add('hidden');
-        }
-
+        function closeKeyModal() { document.getElementById('key-modal').classList.add('hidden'); }
+        function openContactModal() { document.getElementById('contact-modal').classList.remove('hidden'); }
+        function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
         function sendContactMessage(e) {
             e.preventDefault();
             document.getElementById('contact-success').classList.remove('hidden');
             setTimeout(() => closeContactModal(), 1500);
+        }
+
+        function renderUsers() {
+            const pendingCount = profiles.filter(p => p.role === 'pending').length;
+            const badge = document.getElementById('pending-badge');
+            if (pendingCount > 0) {
+                badge.innerText = pendingCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            const body = document.getElementById('users-table-body');
+            if (!body) return;
+            if (profiles.length === 0) {
+                body.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Aucun utilisateur enregistré</td></tr>`;
+            } else {
+                body.innerHTML = profiles.map(p => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                        <td class="p-4 font-semibold">${p.email}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                p.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400' :
+                                p.role === 'user' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' :
+                                'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                            }">
+                                ${p.role === 'pending' ? 'En attente' : p.role.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="p-4 text-right space-x-2">
+                            ${p.role === 'pending' ? `
+                                <button type="button" onclick="updateUserRole('${p.id}', 'user')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold">Valider</button>
+                            ` : ''}
+                            ${p.role === 'user' ? `
+                                <button type="button" onclick="updateUserRole('${p.id}', 'admin')" class="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1 rounded text-xs font-semibold">Passer Admin</button>
+                            ` : ''}
+                            ${p.role === 'admin' && p.email !== currentUser.email ? `
+                                <button type="button" onclick="updateUserRole('${p.id}', 'user')" class="bg-slate-600 hover:bg-slate-500 text-white px-2.5 py-1 rounded text-xs font-semibold">Passer User</button>
+                            ` : ''}
+                            ${p.email !== currentUser.email ? `
+                                <button type="button" onclick="deleteUserProfile('${p.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            }
         }
 
         function render() {
@@ -546,7 +605,6 @@
             }
         }
 
-        // Vérification automatique au démarrage
         window.addEventListener('DOMContentLoaded', () => {
             checkUserSession();
         });
