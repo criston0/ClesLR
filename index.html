@@ -29,7 +29,7 @@
                     <i class="fa-solid fa-key text-2xl"></i>
                 </div>
                 <h1 id="auth-title" class="text-2xl font-bold">Connexion Clés CLR</h1>
-                <p id="auth-subtitle" class="text-slate-500 dark:text-slate-400 text-sm">Gestion des clés en temps réel</p>
+                <p id="auth-subtitle" class="text-slate-500 dark:text-slate-400 text-sm">Gestion sécurisée en temps réel</p>
             </div>
 
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
@@ -84,7 +84,7 @@
             </div>
 
             <nav class="flex-1 p-4 space-y-1">
-                <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard" class="admin-only hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <i class="fa-solid fa-chart-line w-5"></i> Tableau de bord
                 </button>
                 <button type="button" onclick="switchTab('keys')" id="nav-keys" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
@@ -93,13 +93,13 @@
                 <button type="button" onclick="switchTab('loans')" id="nav-loans" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <i class="fa-solid fa-hand-holding w-5"></i> Emprunts en cours
                 </button>
-                <button type="button" onclick="switchTab('users')" id="nav-users" class="hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('users')" id="nav-users" class="admin-only hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-users w-5"></i> Utilisateurs
                     </div>
                     <span id="pending-badge" class="hidden bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
-                <button type="button" onclick="switchTab('messages')" id="nav-messages" class="hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('messages')" id="nav-messages" class="admin-only hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-inbox w-5"></i> Messages Admin
                     </div>
@@ -146,15 +146,15 @@
                         <p id="stat-borrowed" class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2">0</p>
                     </div>
 
-                    <!-- Statistiques Administrateur (Visibles uniquement pour l'admin) -->
-                    <div id="admin-stat-pending" class="hidden bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-amber-500 transition" onclick="switchTab('users')">
+                    <!-- Statistiques Administrateur -->
+                    <div id="admin-stat-pending" class="admin-only hidden bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-amber-500 transition" onclick="switchTab('users')">
                         <p class="text-sm font-medium text-amber-500 flex items-center justify-between">
                             Inscriptions en attente
                             <i class="fa-solid fa-users"></i>
                         </p>
                         <p id="stat-pending" class="text-3xl font-bold text-amber-500 mt-2">0</p>
                     </div>
-                    <div id="admin-stat-messages" class="hidden bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-500 transition" onclick="switchTab('messages')">
+                    <div id="admin-stat-messages" class="admin-only hidden bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-500 transition" onclick="switchTab('messages')">
                         <p class="text-sm font-medium text-indigo-500 flex items-center justify-between">
                             Messages reçus
                             <i class="fa-solid fa-inbox"></i>
@@ -236,7 +236,7 @@
 
             <!-- Messages Utilisateurs Admin -->
             <section id="tab-messages" class="hidden space-y-6">
-                <h2 class="text-2xl font-bold">Messages recus des Utilisateurs</h2>
+                <h2 class="text-2xl font-bold">Messages reçus des Utilisateurs</h2>
                 <div id="messages-list" class="space-y-4"></div>
             </section>
         </main>
@@ -288,7 +288,7 @@
     <script>
         // --- CONFIGURATION SUPABASE ---
         const SUPABASE_URL = 'https://qtlgzkqopptzvcnxseck.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjEwNzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjE0NzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
         
         let supabaseClient = null;
         if (typeof supabase !== 'undefined' && SUPABASE_URL !== 'VOTRE_SUPABASE_URL') {
@@ -301,6 +301,16 @@
         let keys = [];
         let profiles = [];
         let messages = [];
+
+        // Fonction utilitaire de sécurité anti-XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
 
         // --- GESTION DU THÈME ---
         let currentTheme = localStorage.getItem('theme') || 'dark';
@@ -403,21 +413,14 @@
                 document.getElementById('user-display-email').innerText = currentUser.email;
                 document.getElementById('user-display-role').innerText = currentUser.role;
 
+                const adminElements = document.querySelectorAll('.admin-only');
                 if (currentUser.role === 'admin') {
-                    document.getElementById('nav-dashboard').classList.remove('hidden');
-                    document.getElementById('nav-users').classList.remove('hidden');
-                    document.getElementById('nav-messages').classList.remove('hidden');
-                    document.getElementById('admin-stat-pending').classList.remove('hidden');
-                    document.getElementById('admin-stat-messages').classList.remove('hidden');
+                    adminElements.forEach(el => el.classList.remove('hidden'));
                     loadProfilesRealtime();
                     loadMessagesRealtime();
                     switchTab('dashboard');
                 } else {
-                    document.getElementById('nav-dashboard').classList.add('hidden');
-                    document.getElementById('nav-users').classList.add('hidden');
-                    document.getElementById('nav-messages').classList.add('hidden');
-                    document.getElementById('admin-stat-pending').classList.add('hidden');
-                    document.getElementById('admin-stat-messages').classList.add('hidden');
+                    adminElements.forEach(el => el.classList.add('hidden'));
                     switchTab('keys');
                 }
                 loadKeysRealtime();
@@ -449,7 +452,7 @@
         }
 
         async function loadProfilesRealtime() {
-            if (!supabaseClient) return;
+            if (!supabaseClient || currentUser?.role !== 'admin') return;
             const { data } = await supabaseClient.from('profiles').select('*');
             if (data) profiles = data;
             renderUsers();
@@ -463,7 +466,7 @@
         }
 
         async function loadMessagesRealtime() {
-            if (!supabaseClient) return;
+            if (!supabaseClient || currentUser?.role !== 'admin') return;
             const { data } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: false });
             if (data) messages = data;
             renderMessages();
@@ -478,6 +481,7 @@
 
         // --- ACTIONS ---
         async function deleteMessage(id) {
+            if (currentUser?.role !== 'admin') return;
             if (confirm("Voulez-vous supprimer ce message ?")) {
                 if (supabaseClient) await supabaseClient.from('messages').delete().eq('id', id);
             }
@@ -515,11 +519,12 @@
         }
 
         async function updateUserRole(userId, newRole) {
-            if (!supabaseClient) return;
+            if (!supabaseClient || currentUser?.role !== 'admin') return;
             await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
         }
 
         async function deleteUserProfile(userId) {
+            if (currentUser?.role !== 'admin') return;
             if (confirm("Voulez-vous rejeter et supprimer cet utilisateur ?")) {
                 if (supabaseClient) await supabaseClient.from('profiles').delete().eq('id', userId);
             }
@@ -542,6 +547,7 @@
         }
 
         async function deleteKey(id) {
+            if (currentUser?.role !== 'admin') return;
             if (confirm("Voulez-vous supprimer cette clé ?") && supabaseClient) {
                 await supabaseClient.from('keys').delete().eq('id', id);
             }
@@ -608,6 +614,7 @@
         function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
 
         function renderMessages() {
+            if (currentUser?.role !== 'admin') return;
             const badge = document.getElementById('messages-badge');
             const statMessages = document.getElementById('stat-messages');
             
@@ -631,20 +638,21 @@
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/60 pb-3">
                             <div>
-                                <h3 class="font-bold text-indigo-600 dark:text-indigo-400">${m.subject}</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">De : <span class="font-medium text-slate-700 dark:text-slate-300">${m.sender_email}</span> — ${dateFormatted}</p>
+                                <h3 class="font-bold text-indigo-600 dark:text-indigo-400">${escapeHtml(m.subject)}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">De : <span class="font-medium text-slate-700 dark:text-slate-300">${escapeHtml(m.sender_email)}</span> — ${dateFormatted}</p>
                             </div>
                             <button type="button" onclick="deleteMessage('${m.id}')" class="self-start sm:self-center text-slate-400 hover:text-red-500 text-xs px-2.5 py-1.5 rounded border border-slate-200 dark:border-slate-700 hover:border-red-300 transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-trash"></i> Supprimer
                             </button>
                         </div>
-                        <div class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">${m.message}</div>
+                        <div class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">${escapeHtml(m.message)}</div>
                     </div>
                 `}).join('');
             }
         }
 
         function renderUsers() {
+            if (currentUser?.role !== 'admin') return;
             const pendingCount = profiles.filter(p => p.role === 'pending').length;
             const badge = document.getElementById('pending-badge');
             const statPending = document.getElementById('stat-pending');
@@ -664,7 +672,7 @@
             } else {
                 body.innerHTML = profiles.map(p => `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                        <td class="p-4 font-semibold">${p.email}</td>
+                        <td class="p-4 font-semibold">${escapeHtml(p.email)}</td>
                         <td class="p-4">
                             <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${
                                 p.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400' :
@@ -702,9 +710,10 @@
             if (statAvailable) statAvailable.innerText = keys.filter(k => k.status === 'disponible').length;
             if (statBorrowed) statBorrowed.innerText = keys.filter(k => k.status === 'emprunte').length;
 
-            // Mettre à jour aussi les compteurs admin au passage s'ils sont chargés
-            renderUsers();
-            renderMessages();
+            if (currentUser?.role === 'admin') {
+                renderUsers();
+                renderMessages();
+            }
 
             const searchKeysInput = document.getElementById('search-keys');
             const searchKeysQuery = (searchKeysInput ? searchKeysInput.value : '').toLowerCase().trim();
@@ -722,8 +731,8 @@
                         const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
                         return `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-4 font-semibold">${k.code}</td>
-                            <td class="p-4 text-slate-600 dark:text-slate-300">${k.location}</td>
+                            <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                            <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.location)}</td>
                             <td class="p-4">
                                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'}">
                                     ${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}
@@ -760,9 +769,9 @@
                         const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
                         return `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-4 font-semibold">${k.code}</td>
-                            <td class="p-4 text-slate-600 dark:text-slate-300">${k.borrowed_by || 'Inconnu'}</td>
-                            <td class="p-4 text-slate-400 text-xs">${k.date || '-'}</td>
+                            <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                            <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.borrowed_by || 'Inconnu')}</td>
+                            <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
                             <td class="p-4 text-right">
                                 ${canReturn 
                                     ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>`
