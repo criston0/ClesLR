@@ -99,6 +99,12 @@
                     </div>
                     <span id="pending-badge" class="hidden bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
+                <button type="button" onclick="switchTab('messages')" id="nav-messages" class="hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-inbox w-5"></i> Messages Admin
+                    </div>
+                    <span id="messages-badge" class="hidden bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
             </nav>
 
             <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
@@ -151,7 +157,6 @@
                     </button>
                 </div>
 
-                <!-- BARRE DE RECHERCHE POUR LES CLÉS -->
                 <div class="relative max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="search-keys" oninput="render()" placeholder="Rechercher par code site ou lieu..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
@@ -176,7 +181,6 @@
             <section id="tab-loans" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">Emprunts en cours</h2>
 
-                <!-- BARRE DE RECHERCHE POUR LES EMPRUNTS -->
                 <div class="relative max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="search-loans" oninput="render()" placeholder="Rechercher un emprunt par code ou utilisateur..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
@@ -212,6 +216,12 @@
                         <tbody id="users-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
                     </table>
                 </div>
+            </section>
+
+            <!-- Messages Utilisateurs Admin -->
+            <section id="tab-messages" class="hidden space-y-6">
+                <h2 class="text-2xl font-bold">Messages recus des Utilisateurs</h2>
+                <div id="messages-list" class="space-y-4"></div>
             </section>
         </main>
     </div>
@@ -260,7 +270,7 @@
     </div>
 
     <script>
-// --- CONFIGURATION SUPABASE ---
+        // --- CONFIGURATION SUPABASE ---
         const SUPABASE_URL = 'https://qtlgzkqopptzvcnxseck.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjE0NzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
         
@@ -274,6 +284,7 @@
         let currentUser = null;
         let keys = [];
         let profiles = [];
+        let messages = [];
 
         // --- GESTION DU THÈME ---
         let currentTheme = localStorage.getItem('theme') || 'dark';
@@ -379,11 +390,14 @@
                 if (currentUser.role === 'admin') {
                     document.getElementById('nav-dashboard').classList.remove('hidden');
                     document.getElementById('nav-users').classList.remove('hidden');
+                    document.getElementById('nav-messages').classList.remove('hidden');
                     loadProfilesRealtime();
+                    loadMessagesRealtime();
                     switchTab('dashboard');
                 } else {
                     document.getElementById('nav-dashboard').classList.add('hidden');
                     document.getElementById('nav-users').classList.add('hidden');
+                    document.getElementById('nav-messages').classList.add('hidden');
                     switchTab('keys');
                 }
                 loadKeysRealtime();
@@ -395,7 +409,7 @@
             location.reload();
         }
 
-        // --- GESTION DES CLÉS & PROFILS TEMPS RÉEL ---
+        // --- GESTION DES CLÉS, PROFILS ET MESSAGES TEMPS RÉEL ---
         async function loadKeysRealtime() {
             if (!supabaseClient) return;
             const { data } = await supabaseClient.from('keys').select('*');
@@ -426,6 +440,58 @@
                         if (data) { profiles = data; renderUsers(); }
                     });
                 }).subscribe();
+        }
+
+        async function loadMessagesRealtime() {
+            if (!supabaseClient) return;
+            const { data } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: false });
+            if (data) messages = data;
+            renderMessages();
+
+            supabaseClient.channel('public:messages')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+                    supabaseClient.from('messages').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+                        if (data) { messages = data; renderMessages(); }
+                    });
+                }).subscribe();
+        }
+
+        // --- GESTION DES MESSAGES ADMIN ---
+        async function deleteMessage(id) {
+            if (confirm("Voulez-vous supprimer ce message ?")) {
+                if (supabaseClient) await supabaseClient.from('messages').delete().eq('id', id);
+            }
+        }
+
+        async function sendContactMessage(e) {
+            e.preventDefault();
+            const subject = document.getElementById('contact-subject').value.trim();
+            const message = document.getElementById('contact-message').value.trim();
+            const succDiv = document.getElementById('contact-success');
+
+            if (!supabaseClient || !currentUser) {
+                alert("Vous devez être connecté pour envoyer un message.");
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.from('messages').insert([{
+                    sender_email: currentUser.email,
+                    subject: subject,
+                    message: message
+                }]);
+
+                if (error) throw error;
+
+                succDiv.innerText = "Message transmis à l'administrateur !";
+                succDiv.classList.remove('hidden');
+                document.getElementById('contact-subject').value = '';
+                document.getElementById('contact-message').value = '';
+
+                setTimeout(() => closeContactModal(), 1500);
+            } catch (err) {
+                alert("Erreur lors de l'envoi du message : " + err.message);
+            }
         }
 
         // --- GESTION DES UTILISATEURS PAR L'ADMIN ---
@@ -472,8 +538,6 @@
         async function returnKey(id) {
             if (!supabaseClient) return;
             const key = keys.find(k => k.id === id);
-            
-            // Sécurité côté code : Vérifier que l'utilisateur est l'emprunteur ou un admin
             if (key && (currentUser.role === 'admin' || key.borrowed_by === currentUser.email)) {
                 await supabaseClient.from('keys').update({ status: 'disponible', borrowed_by: null, date: null }).eq('id', id);
             } else {
@@ -485,7 +549,7 @@
         function toggleMobileMenu() { document.getElementById('sidebar').classList.toggle('hidden'); }
 
         function switchTab(tab) {
-            ['dashboard', 'keys', 'loans', 'users'].forEach(t => {
+            ['dashboard', 'keys', 'loans', 'users', 'messages'].forEach(t => {
                 const section = document.getElementById(`tab-${t}`);
                 const navBtn = document.getElementById(`nav-${t}`);
                 if (section) section.classList.add('hidden');
@@ -500,6 +564,7 @@
             if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
             render();
             if (tab === 'users') renderUsers();
+            if (tab === 'messages') renderMessages();
         }
 
         function openKeyModal(id = null) {
@@ -522,10 +587,39 @@
         function closeKeyModal() { document.getElementById('key-modal').classList.add('hidden'); }
         function openContactModal() { document.getElementById('contact-modal').classList.remove('hidden'); }
         function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
-        function sendContactMessage(e) {
-            e.preventDefault();
-            document.getElementById('contact-success').classList.remove('hidden');
-            setTimeout(() => closeContactModal(), 1500);
+
+        function renderMessages() {
+            const badge = document.getElementById('messages-badge');
+            if (messages.length > 0) {
+                badge.innerText = messages.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            const listEl = document.getElementById('messages-list');
+            if (!listEl) return;
+
+            if (messages.length === 0) {
+                listEl.innerHTML = `<div class="p-6 bg-white dark:bg-slate-800 rounded-xl text-center text-slate-400 border border-slate-200 dark:border-slate-700">Aucun message reçu pour le moment.</div>`;
+            } else {
+                listEl.innerHTML = messages.map(m => {
+                    const dateFormatted = new Date(m.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+                    return `
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/60 pb-3">
+                            <div>
+                                <h3 class="font-bold text-indigo-600 dark:text-indigo-400">${m.subject}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">De : <span class="font-medium text-slate-700 dark:text-slate-300">${m.sender_email}</span> — ${dateFormatted}</p>
+                            </div>
+                            <button type="button" onclick="deleteMessage('${m.id}')" class="self-start sm:self-center text-slate-400 hover:text-red-500 text-xs px-2.5 py-1.5 rounded border border-slate-200 dark:border-slate-700 hover:border-red-300 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-trash"></i> Supprimer
+                            </button>
+                        </div>
+                        <div class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">${m.message}</div>
+                    </div>
+                `}).join('');
+            }
         }
 
         function renderUsers() {
@@ -579,7 +673,6 @@
             document.getElementById('stat-available').innerText = keys.filter(k => k.status === 'disponible').length;
             document.getElementById('stat-borrowed').innerText = keys.filter(k => k.status === 'emprunte').length;
 
-            // Filtre de recherche pour la table des clés
             const searchKeysQuery = (document.getElementById('search-keys')?.value || '').toLowerCase().trim();
             const filteredKeys = keys.filter(k => 
                 (k.code && k.code.toLowerCase().includes(searchKeysQuery)) ||
@@ -615,7 +708,6 @@
                 `}).join('');
             }
 
-            // Filtre de recherche pour la table des emprunts
             const searchLoansQuery = (document.getElementById('search-loans')?.value || '').toLowerCase().trim();
             const borrowed = keys.filter(k => k.status === 'emprunte' && (
                 (k.code && k.code.toLowerCase().includes(searchLoansQuery)) ||
