@@ -260,9 +260,9 @@
     </div>
 
     <script>
-        // --- CONFIGURATION SUPABASE ---
+// --- CONFIGURATION SUPABASE ---
         const SUPABASE_URL = 'https://qtlgzkqopptzvcnxseck.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjEwNzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjE0NzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
         
         let supabaseClient = null;
         if (typeof supabase !== 'undefined' && SUPABASE_URL !== 'VOTRE_SUPABASE_URL') {
@@ -471,7 +471,14 @@
 
         async function returnKey(id) {
             if (!supabaseClient) return;
-            await supabaseClient.from('keys').update({ status: 'disponible', borrowed_by: null, date: null }).eq('id', id);
+            const key = keys.find(k => k.id === id);
+            
+            // Sécurité côté code : Vérifier que l'utilisateur est l'emprunteur ou un admin
+            if (key && (currentUser.role === 'admin' || key.borrowed_by === currentUser.email)) {
+                await supabaseClient.from('keys').update({ status: 'disponible', borrowed_by: null, date: null }).eq('id', id);
+            } else {
+                alert("Seul l'emprunteur de la clé ou un administrateur peut la rendre.");
+            }
         }
 
         // --- RENDER ET NAVIGATION ---
@@ -583,7 +590,9 @@
             if (filteredKeys.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
             } else {
-                tableBody.innerHTML = filteredKeys.map(k => `
+                tableBody.innerHTML = filteredKeys.map(k => {
+                    const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
+                    return `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                         <td class="p-4 font-semibold">${k.code}</td>
                         <td class="p-4 text-slate-600 dark:text-slate-300">${k.location}</td>
@@ -597,11 +606,13 @@
                             ${currentUser && currentUser.role === 'admin' ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
                             ${k.status === 'disponible' 
                                 ? `<button type="button" onclick="borrowKey('${k.id}')" class="bg-indigo-50 dark:bg-indigo-600/20 hover:bg-indigo-100 dark:hover:bg-indigo-600/40 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>`
-                                : `<button type="button" onclick="returnKey('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 dark:hover:bg-amber-600/40 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
+                                : canReturn 
+                                    ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 dark:hover:bg-amber-600/40 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
+                                    : `<span class="text-slate-400 text-xs italic opacity-75 cursor-not-allowed" title="Réservé à l'emprunteur ou à l'admin"><i class="fa-solid fa-lock mr-1"></i>Empruntée</span>`
                             }
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
 
             // Filtre de recherche pour la table des emprunts
@@ -615,16 +626,21 @@
             if (borrowed.length === 0) {
                 loansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
             } else {
-                loansTableBody.innerHTML = borrowed.map(k => `
+                loansTableBody.innerHTML = borrowed.map(k => {
+                    const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
+                    return `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                         <td class="p-4 font-semibold">${k.code}</td>
                         <td class="p-4 text-slate-600 dark:text-slate-300">${k.borrowed_by || 'Inconnu'}</td>
                         <td class="p-4 text-slate-400 text-xs">${k.date || '-'}</td>
                         <td class="p-4 text-right">
-                            <button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>
+                            ${canReturn 
+                                ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>`
+                                : `<span class="text-slate-400 text-xs italic"><i class="fa-solid fa-lock mr-1"></i>Non autorisé</span>`
+                            }
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
         }
 
