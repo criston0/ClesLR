@@ -409,7 +409,7 @@
             location.reload();
         }
 
-        // --- GESTION DES CLÉS, PROFILS ET MESSAGES TEMPS RÉEL ---
+        // --- CHARGEMENT DES DONNÉES TEMPS RÉEL ---
         async function loadKeysRealtime() {
             if (!supabaseClient) return;
             const { data } = await supabaseClient.from('keys').select('*');
@@ -456,7 +456,7 @@
                 }).subscribe();
         }
 
-        // --- GESTION DES MESSAGES ADMIN ---
+        // --- ACTIONS ---
         async function deleteMessage(id) {
             if (confirm("Voulez-vous supprimer ce message ?")) {
                 if (supabaseClient) await supabaseClient.from('messages').delete().eq('id', id);
@@ -494,7 +494,6 @@
             }
         }
 
-        // --- GESTION DES UTILISATEURS PAR L'ADMIN ---
         async function updateUserRole(userId, newRole) {
             if (!supabaseClient) return;
             await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
@@ -506,7 +505,6 @@
             }
         }
 
-        // --- ACTIONS SUR LES CLÉS ---
         async function saveKey(e) {
             e.preventDefault();
             const id = document.getElementById('key-id').value;
@@ -545,7 +543,7 @@
             }
         }
 
-        // --- RENDER ET NAVIGATION ---
+        // --- NAVIGATION ET RENDU ---
         function toggleMobileMenu() { document.getElementById('sidebar').classList.toggle('hidden'); }
 
         function switchTab(tab) {
@@ -562,6 +560,8 @@
             if (activeNavBtn) activeNavBtn.classList.add('bg-indigo-600', 'text-white');
 
             if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
+            
+            // Forcer le rafraîchissement des vues
             render();
             if (tab === 'users') renderUsers();
             if (tab === 'messages') renderMessages();
@@ -669,70 +669,80 @@
         }
 
         function render() {
-            document.getElementById('stat-total').innerText = keys.length;
-            document.getElementById('stat-available').innerText = keys.filter(k => k.status === 'disponible').length;
-            document.getElementById('stat-borrowed').innerText = keys.filter(k => k.status === 'emprunte').length;
+            const statTotal = document.getElementById('stat-total');
+            const statAvailable = document.getElementById('stat-available');
+            const statBorrowed = document.getElementById('stat-borrowed');
 
-            const searchKeysQuery = (document.getElementById('search-keys')?.value || '').toLowerCase().trim();
+            if (statTotal) statTotal.innerText = keys.length;
+            if (statAvailable) statAvailable.innerText = keys.filter(k => k.status === 'disponible').length;
+            if (statBorrowed) statBorrowed.innerText = keys.filter(k => k.status === 'emprunte').length;
+
+            const searchKeysInput = document.getElementById('search-keys');
+            const searchKeysQuery = (searchKeysInput ? searchKeysInput.value : '').toLowerCase().trim();
             const filteredKeys = keys.filter(k => 
                 (k.code && k.code.toLowerCase().includes(searchKeysQuery)) ||
                 (k.location && k.location.toLowerCase().includes(searchKeysQuery))
             );
 
             const tableBody = document.getElementById('keys-table-body');
-            if (filteredKeys.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
-            } else {
-                tableBody.innerHTML = filteredKeys.map(k => {
-                    const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
-                    return `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                        <td class="p-4 font-semibold">${k.code}</td>
-                        <td class="p-4 text-slate-600 dark:text-slate-300">${k.location}</td>
-                        <td class="p-4">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'}">
-                                ${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}
-                            </span>
-                        </td>
-                        <td class="p-4 text-right space-x-2">
-                            <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1" title="Modifier"><i class="fa-solid fa-pen"></i></button>
-                            ${currentUser && currentUser.role === 'admin' ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
-                            ${k.status === 'disponible' 
-                                ? `<button type="button" onclick="borrowKey('${k.id}')" class="bg-indigo-50 dark:bg-indigo-600/20 hover:bg-indigo-100 dark:hover:bg-indigo-600/40 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>`
-                                : canReturn 
-                                    ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 dark:hover:bg-amber-600/40 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
-                                    : `<span class="text-slate-400 text-xs italic opacity-75 cursor-not-allowed" title="Réservé à l'emprunteur ou à l'admin"><i class="fa-solid fa-lock mr-1"></i>Empruntée</span>`
-                            }
-                        </td>
-                    </tr>
-                `}).join('');
+            if (tableBody) {
+                if (filteredKeys.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
+                } else {
+                    tableBody.innerHTML = filteredKeys.map(k => {
+                        const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
+                        return `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                            <td class="p-4 font-semibold">${k.code}</td>
+                            <td class="p-4 text-slate-600 dark:text-slate-300">${k.location}</td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'}">
+                                    ${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}
+                                </span>
+                            </td>
+                            <td class="p-4 text-right space-x-2">
+                                <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+                                ${currentUser && currentUser.role === 'admin' ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                ${k.status === 'disponible' 
+                                    ? `<button type="button" onclick="borrowKey('${k.id}')" class="bg-indigo-50 dark:bg-indigo-600/20 hover:bg-indigo-100 dark:hover:bg-indigo-600/40 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>`
+                                    : canReturn 
+                                        ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 dark:hover:bg-amber-600/40 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
+                                        : `<span class="text-slate-400 text-xs italic opacity-75 cursor-not-allowed" title="Réservé à l'emprunteur ou à l'admin"><i class="fa-solid fa-lock mr-1"></i>Empruntée</span>`
+                                }
+                            </td>
+                        </tr>
+                    `}).join('');
+                }
             }
 
-            const searchLoansQuery = (document.getElementById('search-loans')?.value || '').toLowerCase().trim();
+            const searchLoansInput = document.getElementById('search-loans');
+            const searchLoansQuery = (searchLoansInput ? searchLoansInput.value : '').toLowerCase().trim();
             const borrowed = keys.filter(k => k.status === 'emprunte' && (
                 (k.code && k.code.toLowerCase().includes(searchLoansQuery)) ||
                 (k.borrowed_by && k.borrowed_by.toLowerCase().includes(searchLoansQuery))
             ));
 
             const loansTableBody = document.getElementById('loans-table-body');
-            if (borrowed.length === 0) {
-                loansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
-            } else {
-                loansTableBody.innerHTML = borrowed.map(k => {
-                    const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
-                    return `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                        <td class="p-4 font-semibold">${k.code}</td>
-                        <td class="p-4 text-slate-600 dark:text-slate-300">${k.borrowed_by || 'Inconnu'}</td>
-                        <td class="p-4 text-slate-400 text-xs">${k.date || '-'}</td>
-                        <td class="p-4 text-right">
-                            ${canReturn 
-                                ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>`
-                                : `<span class="text-slate-400 text-xs italic"><i class="fa-solid fa-lock mr-1"></i>Non autorisé</span>`
-                            }
-                        </td>
-                    </tr>
-                `}).join('');
+            if (loansTableBody) {
+                if (borrowed.length === 0) {
+                    loansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
+                } else {
+                    loansTableBody.innerHTML = borrowed.map(k => {
+                        const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
+                        return `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                            <td class="p-4 font-semibold">${k.code}</td>
+                            <td class="p-4 text-slate-600 dark:text-slate-300">${k.borrowed_by || 'Inconnu'}</td>
+                            <td class="p-4 text-slate-400 text-xs">${k.date || '-'}</td>
+                            <td class="p-4 text-right">
+                                ${canReturn 
+                                    ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>`
+                                    : `<span class="text-slate-400 text-xs italic"><i class="fa-solid fa-lock mr-1"></i>Non autorisé</span>`
+                                }
+                            </td>
+                        </tr>
+                    `}).join('');
+                }
             }
         }
 
