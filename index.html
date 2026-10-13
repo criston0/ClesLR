@@ -60,10 +60,10 @@
     </div>
 
     <!-- Application Principale -->
-    <div id="app-screen" class="hidden min-h-screen flex flex-col md:flex-row">
+    <div id="app-screen" class="hidden min-h-screen flex flex-col md:flex-row relative">
         
         <!-- Navbar Mobile -->
-        <div class="md:hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white p-4 flex justify-between items-center sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="md:hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-white p-4 flex justify-between items-center sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="font-bold flex items-center gap-2">
                 <i class="fa-solid fa-key text-indigo-600 dark:text-indigo-400"></i> Clés CLR
             </div>
@@ -77,10 +77,18 @@
             </div>
         </div>
 
+        <!-- Backdrop Overlay pour mobile -->
+        <div id="sidebar-backdrop" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
+
         <!-- Sidebar -->
-        <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-64 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 min-h-screen border-r border-slate-200 dark:border-slate-800">
-            <div class="hidden md:flex p-5 text-xl font-bold text-slate-900 dark:text-white items-center gap-2 border-b border-slate-200 dark:border-slate-800">
-                <i class="fa-solid fa-key text-indigo-600 dark:text-indigo-400"></i> Clés CLR
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col w-64 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 min-h-screen border-r border-slate-200 dark:border-slate-800 shadow-xl md:shadow-none">
+            <div class="p-5 text-xl font-bold text-slate-900 dark:text-white flex justify-between items-center border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-key text-indigo-600 dark:text-indigo-400"></i> Clés CLR
+                </div>
+                <button type="button" onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
             <nav class="flex-1 p-4 space-y-1">
@@ -92,6 +100,12 @@
                 </button>
                 <button type="button" onclick="switchTab('loans')" id="nav-loans" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <i class="fa-solid fa-hand-holding w-5"></i> Emprunts en cours
+                </button>
+                <button type="button" onclick="switchTab('my-loans')" id="nav-my-loans" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-user-clock w-5"></i> Mes emprunts
+                    </div>
+                    <span id="my-loans-badge" class="hidden bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
                 <button type="button" onclick="switchTab('users')" id="nav-users" class="admin-only hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <div class="flex items-center gap-3">
@@ -193,7 +207,7 @@
                 </div>
             </section>
 
-            <!-- Emprunts -->
+            <!-- Emprunts en cours -->
             <section id="tab-loans" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">Emprunts en cours</h2>
 
@@ -213,6 +227,25 @@
                             </tr>
                         </thead>
                         <tbody id="loans-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Mes emprunts -->
+            <section id="tab-my-loans" class="hidden space-y-6">
+                <h2 class="text-2xl font-bold">Mes emprunts</h2>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
+                            <tr>
+                                <th class="p-4">Code Site</th>
+                                <th class="p-4">Endroit de stockage</th>
+                                <th class="p-4">Date de sortie</th>
+                                <th class="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="my-loans-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
                     </table>
                 </div>
             </section>
@@ -589,7 +622,6 @@
             const errDiv = document.getElementById('key-modal-error');
             errDiv.classList.add('hidden');
 
-            // Vérification des doublons
             const duplicateCode = keys.find(k => k.code.toLowerCase() === code.toLowerCase() && k.id !== id);
             if (duplicateCode) {
                 errDiv.innerText = `Erreur : Le code site "${code}" existe déjà.`;
@@ -638,10 +670,15 @@
         }
 
         // --- NAVIGATION ET RENDU ---
-        function toggleMobileMenu() { document.getElementById('sidebar').classList.toggle('hidden'); }
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+        }
 
         function switchTab(tab) {
-            ['dashboard', 'keys', 'loans', 'users', 'messages'].forEach(t => {
+            ['dashboard', 'keys', 'loans', 'my-loans', 'users', 'messages'].forEach(t => {
                 const section = document.getElementById(`tab-${t}`);
                 const navBtn = document.getElementById(`nav-${t}`);
                 if (section) section.classList.add('hidden');
@@ -653,7 +690,10 @@
             if (activeSection) activeSection.classList.remove('hidden');
             if (activeNavBtn) activeNavBtn.classList.add('bg-indigo-600', 'text-white');
 
-            if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-backdrop').classList.add('hidden');
+            }
             
             render();
             if (tab === 'users') renderUsers();
@@ -798,6 +838,16 @@
                 return locA.localeCompare(locB);
             });
 
+            // Badge "Mes emprunts"
+            const myLoans = keys.filter(k => k.status === 'emprunte' && k.borrowed_by === currentUser?.email);
+            const myLoansBadge = document.getElementById('my-loans-badge');
+            if (myLoans.length > 0) {
+                myLoansBadge.innerText = myLoans.length;
+                myLoansBadge.classList.remove('hidden');
+            } else {
+                myLoansBadge.classList.add('hidden');
+            }
+
             const searchKeysInput = document.getElementById('search-keys');
             const searchKeysQuery = (searchKeysInput ? searchKeysInput.value : '').toLowerCase().trim();
             const filteredKeys = keys.filter(k => 
@@ -863,6 +913,24 @@
                             </td>
                         </tr>
                     `}).join('');
+                }
+            }
+
+            const myLoansTableBody = document.getElementById('my-loans-table-body');
+            if (myLoansTableBody) {
+                if (myLoans.length === 0) {
+                    myLoansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Vous n'avez emprunté aucune clé actuellement.</td></tr>`;
+                } else {
+                    myLoansTableBody.innerHTML = myLoans.map(k => `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                            <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                            <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.location)}</td>
+                            <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
+                            <td class="p-4 text-right">
+                                <button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Rendre cette clé</button>
+                            </td>
+                        </tr>
+                    `).join('');
                 }
             }
         }
