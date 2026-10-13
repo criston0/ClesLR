@@ -132,7 +132,7 @@
             <!-- Tableau de bord -->
             <section id="tab-dashboard" class="space-y-6">
                 <h2 class="text-2xl font-bold">Tableau de bord</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                         <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Clés</p>
                         <p id="stat-total" class="text-3xl font-bold mt-2">0</p>
@@ -144,6 +144,22 @@
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
                         <p class="text-sm font-medium text-amber-600 dark:text-amber-400">Clés Empruntées</p>
                         <p id="stat-borrowed" class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2">0</p>
+                    </div>
+
+                    <!-- Statistiques Administrateur (Visibles uniquement pour l'admin) -->
+                    <div id="admin-stat-pending" class="hidden bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-amber-500 transition" onclick="switchTab('users')">
+                        <p class="text-sm font-medium text-amber-500 flex items-center justify-between">
+                            Inscriptions en attente
+                            <i class="fa-solid fa-users"></i>
+                        </p>
+                        <p id="stat-pending" class="text-3xl font-bold text-amber-500 mt-2">0</p>
+                    </div>
+                    <div id="admin-stat-messages" class="hidden bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-500 transition" onclick="switchTab('messages')">
+                        <p class="text-sm font-medium text-indigo-500 flex items-center justify-between">
+                            Messages reçus
+                            <i class="fa-solid fa-inbox"></i>
+                        </p>
+                        <p id="stat-messages" class="text-3xl font-bold text-indigo-500 mt-2">0</p>
                     </div>
                 </div>
             </section>
@@ -272,7 +288,7 @@
     <script>
         // --- CONFIGURATION SUPABASE ---
         const SUPABASE_URL = 'https://qtlgzkqopptzvcnxseck.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjEwNzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjE0NzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
         
         let supabaseClient = null;
         if (typeof supabase !== 'undefined' && SUPABASE_URL !== 'VOTRE_SUPABASE_URL') {
@@ -391,6 +407,8 @@
                     document.getElementById('nav-dashboard').classList.remove('hidden');
                     document.getElementById('nav-users').classList.remove('hidden');
                     document.getElementById('nav-messages').classList.remove('hidden');
+                    document.getElementById('admin-stat-pending').classList.remove('hidden');
+                    document.getElementById('admin-stat-messages').classList.remove('hidden');
                     loadProfilesRealtime();
                     loadMessagesRealtime();
                     switchTab('dashboard');
@@ -398,6 +416,8 @@
                     document.getElementById('nav-dashboard').classList.add('hidden');
                     document.getElementById('nav-users').classList.add('hidden');
                     document.getElementById('nav-messages').classList.add('hidden');
+                    document.getElementById('admin-stat-pending').classList.add('hidden');
+                    document.getElementById('admin-stat-messages').classList.add('hidden');
                     switchTab('keys');
                 }
                 loadKeysRealtime();
@@ -561,7 +581,6 @@
 
             if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('hidden');
             
-            // Forcer le rafraîchissement des vues
             render();
             if (tab === 'users') renderUsers();
             if (tab === 'messages') renderMessages();
@@ -590,11 +609,14 @@
 
         function renderMessages() {
             const badge = document.getElementById('messages-badge');
+            const statMessages = document.getElementById('stat-messages');
+            
             if (messages.length > 0) {
-                badge.innerText = messages.length;
-                badge.classList.remove('hidden');
+                if (badge) { badge.innerText = messages.length; badge.classList.remove('hidden'); }
+                if (statMessages) statMessages.innerText = messages.length;
             } else {
-                badge.classList.add('hidden');
+                if (badge) badge.classList.add('hidden');
+                if (statMessages) statMessages.innerText = '0';
             }
 
             const listEl = document.getElementById('messages-list');
@@ -625,11 +647,14 @@
         function renderUsers() {
             const pendingCount = profiles.filter(p => p.role === 'pending').length;
             const badge = document.getElementById('pending-badge');
+            const statPending = document.getElementById('stat-pending');
+
             if (pendingCount > 0) {
-                badge.innerText = pendingCount;
-                badge.classList.remove('hidden');
+                if (badge) { badge.innerText = pendingCount; badge.classList.remove('hidden'); }
+                if (statPending) statPending.innerText = pendingCount;
             } else {
-                badge.classList.add('hidden');
+                if (badge) badge.classList.add('hidden');
+                if (statPending) statPending.innerText = '0';
             }
 
             const body = document.getElementById('users-table-body');
@@ -676,6 +701,10 @@
             if (statTotal) statTotal.innerText = keys.length;
             if (statAvailable) statAvailable.innerText = keys.filter(k => k.status === 'disponible').length;
             if (statBorrowed) statBorrowed.innerText = keys.filter(k => k.status === 'emprunte').length;
+
+            // Mettre à jour aussi les compteurs admin au passage s'ils sont chargés
+            renderUsers();
+            renderMessages();
 
             const searchKeysInput = document.getElementById('search-keys');
             const searchKeysQuery = (searchKeysInput ? searchKeysInput.value : '').toLowerCase().trim();
