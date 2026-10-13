@@ -2,7 +2,7 @@
 <html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Clés CLR</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -80,18 +80,18 @@
         <!-- Backdrop Overlay pour mobile -->
         <div id="sidebar-backdrop" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
 
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col w-64 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 min-h-screen border-r border-slate-200 dark:border-slate-800 shadow-xl md:shadow-none">
-            <div class="p-5 text-xl font-bold text-slate-900 dark:text-white flex justify-between items-center border-b border-slate-200 dark:border-slate-800">
+        <!-- Sidebar Mobile / Desktop -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col w-72 md:w-64 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 h-[100dvh] md:h-auto min-h-screen border-r border-slate-200 dark:border-slate-800 shadow-2xl md:shadow-none overflow-hidden">
+            <div class="p-5 text-xl font-bold text-slate-900 dark:text-white flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-key text-indigo-600 dark:text-indigo-400"></i> Clés CLR
                 </div>
-                <button type="button" onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button type="button" onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 text-xl">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <nav class="flex-1 p-4 space-y-1">
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
                 <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard" class="admin-only hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
                     <i class="fa-solid fa-chart-line w-5"></i> Tableau de bord
                 </button>
@@ -121,11 +121,11 @@
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-                <button type="button" onclick="toggleTheme()" class="w-full text-left text-xs text-slate-600 dark:text-slate-400 hover:text-amber-500 flex items-center gap-2">
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3 shrink-0 bg-white dark:bg-slate-950">
+                <button type="button" onclick="toggleTheme()" class="w-full text-left text-xs text-slate-600 dark:text-slate-400 hover:text-amber-500 flex items-center gap-2 py-1">
                     <i id="theme-icon-sidebar" class="fa-solid fa-sun w-4 text-center"></i> Mode clair / sombre
                 </button>
-                <button type="button" onclick="openContactModal()" class="w-full text-left text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2">
+                <button type="button" onclick="openContactModal()" class="w-full text-left text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-2 py-1">
                     <i class="fa-solid fa-envelope w-4 text-center"></i> Contact Admin
                 </button>
                 
@@ -134,7 +134,7 @@
                         <p id="user-display-email" class="text-xs font-medium text-slate-900 dark:text-white truncate w-36"></p>
                         <p id="user-display-role" class="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-wider font-semibold"></p>
                     </div>
-                    <button type="button" onclick="logout()" class="text-slate-400 hover:text-red-500 p-2" title="Déconnexion">
+                    <button type="button" onclick="logout()" class="text-slate-400 hover:text-red-500 p-2 text-base" title="Déconnexion">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </button>
                 </div>
@@ -727,7 +727,13 @@
         }
 
         function closeKeyModal() { document.getElementById('key-modal').classList.add('hidden'); }
-        function openContactModal() { document.getElementById('contact-modal').classList.remove('hidden'); }
+        function openContactModal() { 
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-backdrop').classList.add('hidden');
+            }
+            document.getElementById('contact-modal').classList.remove('hidden'); 
+        }
         function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
 
         function renderMessages() {
