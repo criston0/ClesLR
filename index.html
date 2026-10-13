@@ -16,11 +16,10 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans min-h-screen transition-colors duration-200">
 
-    <!-- Écran d'Authentification (Connexion / Inscription) -->
+    <!-- Écran d'Authentification -->
     <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl shadow-xl max-w-md w-full border border-slate-200 dark:border-slate-700 relative">
             
-            <!-- Bouton Thème Auth -->
             <button type="button" onclick="toggleTheme()" class="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:text-amber-500 p-2 transition" title="Changer de thème">
                 <i id="theme-icon-auth" class="fa-solid fa-sun text-lg"></i>
             </button>
@@ -33,7 +32,6 @@
                 <p id="auth-subtitle" class="text-slate-500 dark:text-slate-400 text-sm">Gestion des clés en temps réel</p>
             </div>
 
-            <!-- Formulaire Unique -->
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
@@ -125,7 +123,7 @@
 
         <!-- Contenu Principal -->
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-            <!-- Dashboard -->
+            <!-- Tableau de bord -->
             <section id="tab-dashboard" class="space-y-6">
                 <h2 class="text-2xl font-bold">Tableau de bord</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
@@ -144,7 +142,7 @@
                 </div>
             </section>
 
-            <!-- Clés -->
+            <!-- Liste des Clés -->
             <section id="tab-keys" class="hidden space-y-6">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl font-bold">Gestion des Clés</h2>
@@ -152,6 +150,13 @@
                         <i class="fa-solid fa-plus"></i> Ajouter une clé
                     </button>
                 </div>
+
+                <!-- BARRE DE RECHERCHE POUR LES CLÉS -->
+                <div class="relative max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-keys" oninput="render()" placeholder="Rechercher par code site ou lieu..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[500px]">
                         <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
@@ -170,6 +175,13 @@
             <!-- Emprunts -->
             <section id="tab-loans" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">Emprunts en cours</h2>
+
+                <!-- BARRE DE RECHERCHE POUR LES EMPRUNTS -->
+                <div class="relative max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-loans" oninput="render()" placeholder="Rechercher un emprunt par code ou utilisateur..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[500px]">
                         <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
@@ -185,7 +197,7 @@
                 </div>
             </section>
 
-            <!-- Gestion Utilisateurs (Admin seulement) -->
+            <!-- Utilisateurs Admin -->
             <section id="tab-users" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">Validation & Gestion des Utilisateurs</h2>
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
@@ -320,7 +332,6 @@
                     if (error) throw error;
 
                     if (data.user) {
-                        // Inscription par défaut avec le rôle 'pending'
                         await supabaseClient.from('profiles').upsert([{ id: data.user.id, email: email, role: 'pending' }]);
                         succDiv.innerText = "Inscription enregistrée ! Votre compte est en attente de validation par un administrateur.";
                         succDiv.classList.remove('hidden');
@@ -329,7 +340,6 @@
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
 
-                    // Vérifier si le compte est validé
                     const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.user.id).single();
                     if (profile && profile.role === 'pending') {
                         await supabaseClient.auth.signOut();
@@ -562,11 +572,18 @@
             document.getElementById('stat-available').innerText = keys.filter(k => k.status === 'disponible').length;
             document.getElementById('stat-borrowed').innerText = keys.filter(k => k.status === 'emprunte').length;
 
+            // Filtre de recherche pour la table des clés
+            const searchKeysQuery = (document.getElementById('search-keys')?.value || '').toLowerCase().trim();
+            const filteredKeys = keys.filter(k => 
+                (k.code && k.code.toLowerCase().includes(searchKeysQuery)) ||
+                (k.location && k.location.toLowerCase().includes(searchKeysQuery))
+            );
+
             const tableBody = document.getElementById('keys-table-body');
-            if (keys.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé enregistrée</td></tr>`;
+            if (filteredKeys.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
             } else {
-                tableBody.innerHTML = keys.map(k => `
+                tableBody.innerHTML = filteredKeys.map(k => `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                         <td class="p-4 font-semibold">${k.code}</td>
                         <td class="p-4 text-slate-600 dark:text-slate-300">${k.location}</td>
@@ -587,10 +604,16 @@
                 `).join('');
             }
 
-            const borrowed = keys.filter(k => k.status === 'emprunte');
+            // Filtre de recherche pour la table des emprunts
+            const searchLoansQuery = (document.getElementById('search-loans')?.value || '').toLowerCase().trim();
+            const borrowed = keys.filter(k => k.status === 'emprunte' && (
+                (k.code && k.code.toLowerCase().includes(searchLoansQuery)) ||
+                (k.borrowed_by && k.borrowed_by.toLowerCase().includes(searchLoansQuery))
+            ));
+
             const loansTableBody = document.getElementById('loans-table-body');
             if (borrowed.length === 0) {
-                loansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun emprunt en cours</td></tr>`;
+                loansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
             } else {
                 loansTableBody.innerHTML = borrowed.map(k => `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
