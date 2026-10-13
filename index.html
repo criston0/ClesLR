@@ -82,38 +82,38 @@
 
         <!-- Sidebar Mobile / Desktop -->
         <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col w-72 md:w-64 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 h-[100dvh] md:h-auto min-h-screen border-r border-slate-200 dark:border-slate-800 shadow-2xl md:shadow-none overflow-hidden">
-            <div class="p-5 text-xl font-bold text-slate-900 dark:text-white flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
+            <div class="p-4 text-lg font-bold text-slate-900 dark:text-white flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-key text-indigo-600 dark:text-indigo-400"></i> Clés CLR
                 </div>
-                <button type="button" onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 text-xl">
+                <button type="button" onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 text-lg">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-                <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard" class="admin-only hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+            <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+                <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard" class="admin-only hidden w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <i class="fa-solid fa-chart-line w-5"></i> Tableau de bord
                 </button>
-                <button type="button" onclick="switchTab('keys')" id="nav-keys" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('keys')" id="nav-keys" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <i class="fa-solid fa-key w-5"></i> Liste des Clés
                 </button>
-                <button type="button" onclick="switchTab('loans')" id="nav-loans" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('loans')" id="nav-loans" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <i class="fa-solid fa-hand-holding w-5"></i> Emprunts en cours
                 </button>
-                <button type="button" onclick="switchTab('my-loans')" id="nav-my-loans" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('my-loans')" id="nav-my-loans" class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-user-clock w-5"></i> Mes emprunts
                     </div>
                     <span id="my-loans-badge" class="hidden bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
-                <button type="button" onclick="switchTab('users')" id="nav-users" class="admin-only hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('users')" id="nav-users" class="admin-only hidden w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-users w-5"></i> Utilisateurs
                     </div>
                     <span id="pending-badge" class="hidden bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
-                <button type="button" onclick="switchTab('messages')" id="nav-messages" class="admin-only hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium">
+                <button type="button" onclick="switchTab('messages')" id="nav-messages" class="admin-only hidden w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-inbox w-5"></i> Messages Admin
                     </div>
@@ -121,7 +121,7 @@
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3 shrink-0 bg-white dark:bg-slate-950">
+            <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2 shrink-0 bg-white dark:bg-slate-950">
                 <button type="button" onclick="toggleTheme()" class="w-full text-left text-xs text-slate-600 dark:text-slate-400 hover:text-amber-500 flex items-center gap-2 py-1">
                     <i id="theme-icon-sidebar" class="fa-solid fa-sun w-4 text-center"></i> Mode clair / sombre
                 </button>
@@ -129,7 +129,7 @@
                     <i class="fa-solid fa-envelope w-4 text-center"></i> Contact Admin
                 </button>
                 
-                <div class="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
                     <div class="overflow-hidden">
                         <p id="user-display-email" class="text-xs font-medium text-slate-900 dark:text-white truncate w-36"></p>
                         <p id="user-display-role" class="text-[10px] text-indigo-600 dark:text-indigo-400 uppercase tracking-wider font-semibold"></p>
@@ -675,6 +675,8 @@
             const backdrop = document.getElementById('sidebar-backdrop');
             sidebar.classList.toggle('-translate-x-full');
             backdrop.classList.toggle('hidden');
+            // Verrouille ou déverrouille le scroll du body en arrière-plan
+            document.body.classList.toggle('overflow-hidden');
         }
 
         function switchTab(tab) {
@@ -693,6 +695,7 @@
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
                 document.getElementById('sidebar-backdrop').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
             }
             
             render();
@@ -731,6 +734,7 @@
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
                 document.getElementById('sidebar-backdrop').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
             }
             document.getElementById('contact-modal').classList.remove('hidden'); 
         }
