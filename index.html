@@ -254,7 +254,14 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Endroit de stockage</label>
-                    <input type="text" id="key-location" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100">
+                    <div class="grid grid-cols-3 gap-2">
+                        <select id="loc-type" onchange="updateLocationOptions()" required class="px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
+                            <option value="BAC">BAC</option>
+                            <option value="Backlock">Backlock</option>
+                        </select>
+                        <select id="loc-num1" required class="px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></select>
+                        <select id="loc-num2" required class="px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></select>
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeKeyModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
@@ -302,7 +309,6 @@
         let profiles = [];
         let messages = [];
 
-        // Fonction utilitaire de sécurité anti-XSS
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/&/g, "&amp;")
@@ -329,6 +335,35 @@
         }
         function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
         applyTheme(currentTheme);
+
+        // --- GESTION DES LISTES D'EMPLACEMENT DYNAMIQUES ---
+        function updateLocationOptions(selectedNum1 = null, selectedNum2 = null) {
+            const type = document.getElementById('loc-type').value;
+            const num1Select = document.getElementById('loc-num1');
+            const num2Select = document.getElementById('loc-num2');
+
+            num1Select.innerHTML = '';
+            num2Select.innerHTML = '';
+
+            const maxNum1 = (type === 'BAC') ? 3 : 12;
+            const maxNum2 = (type === 'BAC') ? 50 : 12;
+
+            for (let i = 1; i <= maxNum1; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i;
+                if (selectedNum1 && parseInt(selectedNum1) === i) opt.selected = true;
+                num1Select.appendChild(opt);
+            }
+
+            for (let i = 1; i <= maxNum2; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i;
+                if (selectedNum2 && parseInt(selectedNum2) === i) opt.selected = true;
+                num2Select.appendChild(opt);
+            }
+        }
 
         // --- AUTHENTIFICATION ---
         function toggleAuthMode() {
@@ -386,21 +421,16 @@
                     checkUserSession();
                 }
             } catch (err) {
-                // Traduction des erreurs courantes de Supabase en français
                 let errorMsg = err.message || "";
-                
                 if (errorMsg.includes("Invalid login credentials")) {
                     errorMsg = "E-mail ou mot de passe incorrect.";
                 } else if (errorMsg.includes("Email not confirmed")) {
                     errorMsg = "Votre e-mail n'a pas encore été confirmé.";
                 } else if (errorMsg.includes("Password should be at least")) {
-                    errorMsg = "Le mot de passe doit contenir au moins 8 caractères.";
+                    errorMsg = "Le mot de passe doit contenir au moins 6 caractères.";
                 } else if (errorMsg.includes("User already registered")) {
                     errorMsg = "Un compte existe déjà avec cette adresse e-mail.";
-                } else if (errorMsg.includes("rate limit")) {
-                    errorMsg = "Trop de tentatives de connexion. Veuillez réessayer plus tard.";
                 }
-
                 errDiv.innerText = errorMsg;
                 errDiv.classList.remove('hidden');
             } finally {
@@ -549,7 +579,11 @@
             e.preventDefault();
             const id = document.getElementById('key-id').value;
             const code = document.getElementById('key-code').value.trim();
-            const location = document.getElementById('key-location').value.trim();
+            
+            const type = document.getElementById('loc-type').value;
+            const num1 = document.getElementById('loc-num1').value;
+            const num2 = document.getElementById('loc-num2').value;
+            const location = `${type} ${num1} / ${num2}`;
 
             if (!supabaseClient) return;
 
@@ -613,12 +647,20 @@
                 const k = keys.find(x => x.id === id);
                 if (k) {
                     document.getElementById('key-code').value = k.code;
-                    document.getElementById('key-location').value = k.location;
+                    // Découpage de l'emplacement existant (ex: "BAC 1 / 30" -> type="BAC", num1="1", num2="30")
+                    const parts = k.location ? k.location.split(' ') : ['BAC', '1', '/', '1'];
+                    const type = parts[0];
+                    const num1 = parts[1];
+                    const num2 = parts[3];
+
+                    document.getElementById('loc-type').value = type;
+                    updateLocationOptions(num1, num2);
                     document.getElementById('modal-title').innerText = "Modifier la clé";
                 }
             } else {
                 document.getElementById('key-code').value = '';
-                document.getElementById('key-location').value = '';
+                document.getElementById('loc-type').value = 'BAC';
+                updateLocationOptions();
                 document.getElementById('modal-title').innerText = "Ajouter une clé";
             }
             document.getElementById('key-modal').classList.remove('hidden');
@@ -729,6 +771,13 @@
                 renderUsers();
                 renderMessages();
             }
+
+            // Tri alphabétique des clés par emplacement de stockage
+            keys.sort((a, b) => {
+                const locA = (a.location || '').toLowerCase();
+                const locB = (b.location || '').toLowerCase();
+                return locA.localeCompare(locB);
+            });
 
             const searchKeysInput = document.getElementById('search-keys');
             const searchKeysQuery = (searchKeysInput ? searchKeysInput.value : '').toLowerCase().trim();
