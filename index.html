@@ -200,7 +200,7 @@
                                 <th class="p-4">Code Site</th>
                                 <th class="p-4">Endroit de stockage</th>
                                 <th class="p-4">Statut / Action</th>
-                                <th class="p-4 text-right">Actions Admin</th>
+                                <th class="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="keys-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
@@ -712,7 +712,7 @@
         }
 
         async function deleteKey(id) {
-            if (currentUser?.role !== 'admin') return;
+            if (!currentUser) return;
             if (confirm("Voulez-vous supprimer cette clé ?") && supabaseClient) {
                 await supabaseClient.from('keys').delete().eq('id', id);
             }
@@ -730,7 +730,6 @@
             if (key) {
                 const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
                 
-                // Enregistrement dans l'historique avec l'emprunteur d'origine et l'utilisateur actuel qui rend
                 await supabaseClient.from('loan_history').insert([{
                     code: key.code,
                     location: key.location,
@@ -740,7 +739,6 @@
                     returned_by: currentUser ? currentUser.email : 'Inconnu'
                 }]);
 
-                // Libérer la clé
                 await supabaseClient.from('keys').update({ status: 'disponible', borrowed_by: null, date: null }).eq('id', id);
             }
         }
@@ -1000,7 +998,7 @@
                             </td>
                             <td class="p-4 text-right space-x-2">
                                 <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1" title="Modifier"><i class="fa-solid fa-pen"></i></button>
-                                ${currentUser && currentUser.role === 'admin' ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                ${currentUser ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
                             </td>
                         </tr>
                     `}).join('');
