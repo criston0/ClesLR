@@ -105,6 +105,9 @@
                     </div>
                     <span id="my-loans-badge" class="hidden bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
+                <button type="button" onclick="switchTab('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
+                    <i class="fa-solid fa-clock-rotate-left w-5"></i> Historique des emprunts
+                </button>
                 <button type="button" onclick="switchTab('users')" id="nav-users" class="admin-only hidden w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-users w-5"></i> Utilisateurs
@@ -139,7 +142,7 @@
             </div>
         </aside>
 
-        <!-- Contenu Principal (Décalé sur PC pour laisser place à la sidebar fixe) -->
+        <!-- Contenu Principal -->
         <main class="md:ml-64 p-4 sm:p-6 md:p-8 min-h-screen">
             <!-- Tableau de bord -->
             <section id="tab-dashboard" class="space-y-6">
@@ -248,6 +251,31 @@
                 </div>
             </section>
 
+            <!-- Historique des emprunts -->
+            <section id="tab-history" class="hidden space-y-6">
+                <h2 class="text-2xl font-bold">Historique des emprunts</h2>
+
+                <div class="relative max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-history" oninput="renderHistory()" placeholder="Rechercher par code, lieu ou utilisateur..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
+                            <tr>
+                                <th class="p-4">Code Site</th>
+                                <th class="p-4">Lieu</th>
+                                <th class="p-4">Emprunteur</th>
+                                <th class="p-4">Date de prise</th>
+                                <th class="p-4">Date de rendu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- Utilisateurs Admin -->
             <section id="tab-users" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">Validation & Gestion des Utilisateurs</h2>
@@ -342,6 +370,7 @@
         let isRegistering = false;
         let currentUser = null;
         let keys = [];
+        let historyList = [];
         let profiles = [];
         let messages = [];
 
@@ -510,6 +539,7 @@
                     switchTab('keys');
                 }
                 loadKeysRealtime();
+                loadHistoryRealtime();
             }
         }
 
@@ -534,6 +564,20 @@
                     }
                     if (payload.eventType === 'DELETE') keys = keys.filter(k => k.id !== payload.old.id);
                     render();
+                }).subscribe();
+        }
+
+        async function loadHistoryRealtime() {
+            if (!supabaseClient) return;
+            const { data } = await supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false });
+            if (data) historyList = data;
+            renderHistory();
+
+            supabaseClient.channel('public:loan_history')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'loan_history' }, () => {
+                    supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+                        if (data) { historyList = data; renderHistory(); }
+                    });
                 }).subscribe();
         }
 
@@ -682,10 +726,20 @@
         async function returnKey(id) {
             if (!supabaseClient) return;
             const key = keys.find(k => k.id === id);
-            if (key && (currentUser.role === 'admin' || key.borrowed_by === currentUser.email)) {
+            if (key) {
+                const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+                
+                // Enregistrer dans l'historique
+                await supabaseClient.from('loan_history').insert([{
+                    code: key.code,
+                    location: key.location,
+                    borrowed_by: key.borrowed_by || 'Inconnu',
+                    borrowed_at: key.date || '-',
+                    returned_at: returnDateStr
+                }]);
+
+                // Libérer la clé
                 await supabaseClient.from('keys').update({ status: 'disponible', borrowed_by: null, date: null }).eq('id', id);
-            } else {
-                alert("Seul l'emprunteur de la clé ou un administrateur peut la rendre.");
             }
         }
 
@@ -698,7 +752,7 @@
         }
 
         function switchTab(tab) {
-            ['dashboard', 'keys', 'loans', 'my-loans', 'users', 'messages'].forEach(t => {
+            ['dashboard', 'keys', 'loans', 'my-loans', 'history', 'users', 'messages'].forEach(t => {
                 const section = document.getElementById(`tab-${t}`);
                 const navBtn = document.getElementById(`nav-${t}`);
                 if (section) section.classList.add('hidden');
@@ -716,6 +770,7 @@
             }
             
             render();
+            if (tab === 'history') renderHistory();
             if (tab === 'users') renderUsers();
             if (tab === 'messages') renderMessages();
         }
@@ -846,6 +901,34 @@
             }
         }
 
+        function renderHistory() {
+            const searchHistoryInput = document.getElementById('search-history');
+            const query = (searchHistoryInput ? searchHistoryInput.value : '').toLowerCase().trim();
+
+            const filteredHistory = historyList.filter(h => 
+                (h.code && h.code.toLowerCase().includes(query)) ||
+                (h.location && h.location.toLowerCase().includes(query)) ||
+                (h.borrowed_by && h.borrowed_by.toLowerCase().includes(query))
+            );
+
+            const body = document.getElementById('history-table-body');
+            if (!body) return;
+
+            if (filteredHistory.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun historique trouvé</td></tr>`;
+            } else {
+                body.innerHTML = filteredHistory.map(h => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                        <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
+                        <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.location)}</td>
+                        <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.borrowed_by)}</td>
+                        <td class="p-4 text-slate-400 text-xs">${escapeHtml(h.borrowed_at)}</td>
+                        <td class="p-4 text-slate-400 text-xs">${escapeHtml(h.returned_at)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
         function render() {
             const statTotal = document.getElementById('stat-total');
             const statAvailable = document.getElementById('stat-available');
@@ -889,7 +972,6 @@
                     tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
                 } else {
                     tableBody.innerHTML = filteredKeys.map(k => {
-                        const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
                         return `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                             <td class="p-4">
@@ -905,9 +987,9 @@
                                     <div>
                                         ${k.status === 'disponible' 
                                             ? `<button type="button" onclick="borrowKey('${k.id}')" class="bg-indigo-50 dark:bg-indigo-600/20 hover:bg-indigo-100 dark:hover:bg-indigo-600/40 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>`
-                                            : canReturn 
+                                            : currentUser 
                                                 ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 dark:hover:bg-amber-600/40 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
-                                                : `<span class="text-slate-400 text-xs italic opacity-75 cursor-not-allowed" title="Réservé à l'emprunteur ou à l'admin"><i class="fa-solid fa-lock mr-1"></i>Empruntée</span>`
+                                                : ``
                                         }
                                     </div>
                                 </div>
@@ -934,17 +1016,13 @@
                     loansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
                 } else {
                     loansTableBody.innerHTML = borrowed.map(k => {
-                        const canReturn = currentUser && (currentUser.role === 'admin' || k.borrowed_by === currentUser.email);
                         return `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                             <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
                             <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.borrowed_by || 'Inconnu')}</td>
                             <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
                             <td class="p-4 text-right">
-                                ${canReturn 
-                                    ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>`
-                                    : `<span class="text-slate-400 text-xs italic"><i class="fa-solid fa-lock mr-1"></i>Non autorisé</span>`
-                                }
+                                <button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>
                             </td>
                         </tr>
                     `}).join('');
