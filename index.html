@@ -346,6 +346,25 @@
         </div>
     </div>
 
+    <!-- Modal Confirmation Générique (Suppression Clé, Message ou Utilisateur) -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-700 text-center space-y-4">
+            <div class="inline-flex items-center justify-center w-14 h-14 bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-full mb-1">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+            </div>
+            <h3 id="confirm-modal-title" class="text-lg font-bold">Confirmer la suppression</h3>
+            <p id="confirm-modal-text" class="text-xs text-slate-500 dark:text-slate-400"></p>
+            <div id="confirm-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
+            <div class="flex justify-center gap-2 pt-2">
+                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">Annuler</button>
+                <button type="button" id="confirm-modal-action-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium text-sm flex items-center gap-2">
+                    <span>Confirmer</span>
+                    <i id="confirm-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Emprunt -->
     <div id="borrow-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
@@ -497,11 +516,8 @@
             }
         }
 
-        // --- INDEXATION STRICTE DU TOUT DERNIER RETOUR ---
         function updateLastReturnIndex() {
             lastReturnMap.clear();
-            // historyList est déjà trié du plus récent au plus ancien.
-            // On enregistre uniquement le premier rencontré (le plus récent) pour chaque clé, qu'il ait un commentaire ou non.
             for (let h of historyList) {
                 const keyLower = h.code.toLowerCase();
                 if (!lastReturnMap.has(keyLower)) {
@@ -790,16 +806,9 @@
                 closeReturnModal();
             } catch (err) {
                 errDiv.innerText = "Erreur réseau : impossible de valider le retour.";
-                errDiv.classList.remove('hidden');
+                errDiv.classList.add('hidden');
             } finally {
                 spinner.classList.add('hidden');
-            }
-        }
-
-        async function deleteMessage(id) {
-            if (currentUser?.role !== 'admin') return;
-            if (confirm("Voulez-vous supprimer ce message ?")) {
-                if (supabaseClient) await supabaseClient.from('messages').delete().eq('id', id);
             }
         }
 
@@ -842,13 +851,6 @@
         async function updateUserRole(userId, newRole) {
             if (!supabaseClient || currentUser?.role !== 'admin') return;
             await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
-        }
-
-        async function deleteUserProfile(userId) {
-            if (currentUser?.role !== 'admin') return;
-            if (confirm("Voulez-vous rejeter et supprimer cet utilisateur ?")) {
-                if (supabaseClient) await supabaseClient.from('profiles').delete().eq('id', userId);
-            }
         }
 
         async function saveKey(e) {
@@ -911,11 +913,82 @@
             }
         }
 
-        async function deleteKey(id) {
-            if (!currentUser) return;
-            if (confirm("Voulez-vous supprimer cette clé ?") && supabaseClient) {
-                await supabaseClient.from('keys').delete().eq('id', id);
+        // --- GESTION CENTRALISÉE DU MODAL DE CONFIRMATION ---
+        let currentConfirmCallback = null;
+
+        function showConfirmModal(title, text, callback) {
+            document.getElementById('confirm-modal-title').innerText = title;
+            document.getElementById('confirm-modal-text').innerText = text;
+            document.getElementById('confirm-modal-error').classList.add('hidden');
+            currentConfirmCallback = callback;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            currentConfirmCallback = null;
+        }
+
+        async function executeConfirmAction() {
+            if (!currentConfirmCallback) return;
+            const spinner = document.getElementById('confirm-spinner');
+            const errDiv = document.getElementById('confirm-modal-error');
+            spinner.classList.remove('hidden');
+            errDiv.classList.add('hidden');
+
+            try {
+                await currentConfirmCallback();
+                closeConfirmModal();
+            } catch (err) {
+                errDiv.innerText = "Erreur lors de l'exécution de l'action.";
+                errDiv.classList.remove('hidden');
+            } finally {
+                spinner.classList.add('hidden');
             }
+        }
+
+        // Branchement du bouton de confirmation global
+        document.getElementById('confirm-modal-action-btn').addEventListener('click', executeConfirmAction);
+
+        function deleteKey(id) {
+            if (!currentUser) return;
+            const k = keys.find(x => x.id === id);
+            if (!k) return;
+
+            showConfirmModal(
+                "Confirmer la suppression",
+                `Voulez-vous vraiment supprimer la clé "${k.code}" (${k.location}) ?`,
+                async () => {
+                    const { error } = await supabaseClient.from('keys').delete().eq('id', id);
+                    if (error) throw error;
+                }
+            );
+        }
+
+        function deleteMessage(id) {
+            if (currentUser?.role !== 'admin') return;
+            showConfirmModal(
+                "Supprimer le message",
+                "Voulez-vous vraiment supprimer ce message ?",
+                async () => {
+                    const { error } = await supabaseClient.from('messages').delete().eq('id', id);
+                    if (error) throw error;
+                }
+            );
+        }
+
+        function deleteUserProfile(userId) {
+            if (currentUser?.role !== 'admin') return;
+            const p = profiles.find(x => x.id === userId);
+            const emailText = p ? p.email : 'cet utilisateur';
+            showConfirmModal(
+                "Rejeter l'utilisateur",
+                `Voulez-vous rejeter et supprimer définitivement le compte de ${emailText} ?`,
+                async () => {
+                    const { error } = await supabaseClient.from('profiles').delete().eq('id', userId);
+                    if (error) throw error;
+                }
+            );
         }
 
         function toggleMobileMenu() {
@@ -990,6 +1063,7 @@
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeKeyModal();
+                closeConfirmModal();
                 closeBorrowModal();
                 closeReturnModal();
                 closeContactModal();
@@ -1190,7 +1264,6 @@
                         const lastHistoryEntry = lastReturnMap.get(k.code.toLowerCase());
                         
                         let displayReturnInfo = '<span class="text-slate-300 dark:text-slate-600 not-italic">-</span>';
-                        // On vérifie spécifiquement si le tout dernier retour possède un commentaire
                         if (lastHistoryEntry && lastHistoryEntry.return_comment) {
                             displayReturnInfo = `<span class="text-xs text-slate-600 dark:text-slate-300 font-medium">${escapeHtml(lastHistoryEntry.returned_at)}</span> : <span class="italic text-slate-500 dark:text-slate-400">"${escapeHtml(lastHistoryEntry.return_comment)}"</span>`;
                         }
@@ -1215,7 +1288,6 @@
                                                 : ``
                                         }
                                     </div>
-                                    <!-- Affichage empilé du dernier commentaire de rendu si présent (mobile) -->
                                     ${lastHistoryEntry && lastHistoryEntry.return_comment ? `
                                         <div class="block sm:hidden text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
                                             <span class="text-slate-400 font-medium">Dernier retour :</span> ${displayReturnInfo}
@@ -1252,7 +1324,7 @@
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                             <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
                             <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.borrowed_by || 'Inconnu')}</td>
-                            <p class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</p>
+                            <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
                             <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(k.borrow_comment || '-')}</td>
                             <td class="p-4 text-right">
                                 <button type="button" onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>
