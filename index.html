@@ -193,12 +193,13 @@
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[500px]">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
                         <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
                             <tr>
                                 <th class="p-4">Code Site</th>
                                 <th class="p-4">Endroit de stockage</th>
                                 <th class="p-4">Statut / Action</th>
+                                <th class="p-4">Dernier commentaire de retour</th>
                                 <th class="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -271,7 +272,7 @@
                                 <th class="p-4">Date de prise</th>
                                 <th class="p-4">Remarque emprunt</th>
                                 <th class="p-4">Rendu par</th>
-                                <th class="p-4">Date de rendu</th>
+                                <th class="p-4">Date de retour</th>
                                 <th class="p-4">Remarque retour</th>
                             </tr>
                         </thead>
@@ -349,7 +350,7 @@
                 <input type="hidden" id="borrow-key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Commentaire / Remarque (optionnel)</label>
-                    <textarea id="borrow-comment-input" rows="3" placeholder="Ex: prêt pour MOE (avec contact), emprunt pour un temps donné,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                    <textarea id="borrow-comment-input" rows="3" placeholder="Ex: Intervention de maintenance, prêt exceptionnel..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeBorrowModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
@@ -368,7 +369,7 @@
                 <input type="hidden" id="return-key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Commentaire / Remarque au retour (optionnel)</label>
-                    <textarea id="return-comment-input" rows="3" placeholder="Ex: vigik non fonctionnel, serrure/accès modifié,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                    <textarea id="return-comment-input" rows="3" placeholder="Ex: Clé remise en place, étiquette un peu usée..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeReturnModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
@@ -616,11 +617,16 @@
             const { data } = await supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false });
             if (data) historyList = data;
             renderHistory();
+            render(); // Met à jour l'affichage des clés (pour récupérer le dernier commentaire de rendu)
 
             supabaseClient.channel('public:loan_history')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'loan_history' }, () => {
                     supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-                        if (data) { historyList = data; renderHistory(); }
+                        if (data) { 
+                            historyList = data; 
+                            renderHistory(); 
+                            render(); 
+                        }
                     });
                 }).subscribe();
         }
@@ -1070,9 +1076,13 @@
             const tableBody = document.getElementById('keys-table-body');
             if (tableBody) {
                 if (filteredKeys.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
                 } else {
                     tableBody.innerHTML = filteredKeys.map(k => {
+                        // Recherche du dernier historique de retour pour cette clé spécifique (via son code)
+                        const lastHistoryEntry = historyList.find(h => h.code.toLowerCase() === k.code.toLowerCase());
+                        const lastReturnComment = lastHistoryEntry ? lastHistoryEntry.return_comment : null;
+
                         return `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                             <td class="p-4">
@@ -1094,6 +1104,9 @@
                                         }
                                     </div>
                                 </div>
+                            </td>
+                            <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">
+                                ${lastReturnComment ? escapeHtml(lastReturnComment) : '<span class="text-slate-300 dark:text-slate-600 not-italic">-</span>'}
                             </td>
                             <td class="p-4 text-right space-x-2">
                                 <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1" title="Modifier"><i class="fa-solid fa-pen"></i></button>
