@@ -259,7 +259,7 @@
 
                 <div class="relative max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-history" oninput="renderHistory()" placeholder="Rechercher par code, endroit, personne ou remarque..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="search-history" oninput="historyPage=1; renderHistory()" placeholder="Rechercher par code, endroit, personne ou remarque..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
@@ -279,6 +279,8 @@
                         <tbody id="history-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
                     </table>
                 </div>
+                <!-- Pagination de l'historique -->
+                <div id="history-pagination" class="flex items-center justify-between px-2 pt-2"></div>
             </section>
 
             <!-- Utilisateurs Admin -->
@@ -315,11 +317,11 @@
                 <input type="hidden" id="key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Code Site <span class="text-xs text-slate-400">(Chiffres et _ uniquement)</span></label>
-                    <input type="text" id="key-code" required oninput="validateKeyCodeInput(this)" placeholder="Ex: 12345_6" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100">
+                    <input type="text" id="key-code" required oninput="validateKeyCodeInput(this)" placeholder="Ex: 69000_000" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Infos supplémentaires (optionnel)</label>
-                    <input type="text" id="key-info" placeholder="Ex: Bâtiment A, 2ème étage..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
+                    <input type="text" id="key-info" placeholder="Ex: badge portail, clé trappe,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Endroit de stockage</label>
@@ -335,7 +337,10 @@
                 <div id="key-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeKeyModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Enregistrer</button>
+                    <button type="submit" id="key-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-2">
+                        <span>Enregistrer</span>
+                        <i id="key-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
+                    </button>
                 </div>
             </form>
         </div>
@@ -350,11 +355,15 @@
                 <input type="hidden" id="borrow-key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Commentaire / Remarque (optionnel)</label>
-                    <textarea id="borrow-comment-input" rows="3" placeholder="Ex: Intervention de maintenance, prêt exceptionnel..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                    <textarea id="borrow-comment-input" rows="3" placeholder="Ex: prêt pour MOE (contact), emprunt longue durée,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
                 </div>
+                <div id="borrow-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeBorrowModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Confirmer l'emprunt</button>
+                    <button type="submit" id="borrow-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-2">
+                        <span>Confirmer l'emprunt</span>
+                        <i id="borrow-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
+                    </button>
                 </div>
             </form>
         </div>
@@ -369,11 +378,15 @@
                 <input type="hidden" id="return-key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Commentaire / Remarque au retour (optionnel)</label>
-                    <textarea id="return-comment-input" rows="3" placeholder="Ex: Clé remise en place, étiquette un peu usée..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                    <textarea id="return-comment-input" rows="3" placeholder="Ex: vigik ne fonctionne plus, serrure changée,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
                 </div>
+                <div id="return-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeReturnModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
-                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium">Valider le retour</button>
+                    <button type="submit" id="return-submit-btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium flex items-center gap-2">
+                        <span>Valider le retour</span>
+                        <i id="return-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
+                    </button>
                 </div>
             </form>
         </div>
@@ -395,7 +408,10 @@
                 <div id="contact-success" class="hidden text-emerald-600 dark:text-emerald-400 text-xs font-semibold text-center">Message transmis à l'administrateur !</div>
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="closeContactModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Fermer</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Envoyer</button>
+                    <button type="submit" id="contact-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-2">
+                        <span>Envoyer</span>
+                        <i id="contact-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
+                    </button>
                 </div>
             </form>
         </div>
@@ -418,6 +434,11 @@
         let historyList = [];
         let profiles = [];
         let messages = [];
+
+        // État de l'indexation rapide des retours & de la pagination
+        let lastReturnMap = new Map();
+        let historyPage = 1;
+        const HISTORY_PAGE_SIZE = 50;
 
         function escapeHtml(str) {
             if (!str) return '';
@@ -477,6 +498,18 @@
                 opt.textContent = i;
                 if (selectedNum2 && parseInt(selectedNum2) === i) opt.selected = true;
                 num2Select.appendChild(opt);
+            }
+        }
+
+        // --- INDEXATION DES DERNIERS RETOURS (Optimisation 1) ---
+        function updateLastReturnIndex() {
+            lastReturnMap.clear();
+            // historyList est trié par date décroissante, on garde le premier retour trouvé avec un commentaire
+            for (let h of historyList) {
+                const keyLower = h.code.toLowerCase();
+                if (!lastReturnMap.has(keyLower) && h.return_comment) {
+                    lastReturnMap.set(keyLower, h);
+                }
             }
         }
 
@@ -615,15 +648,19 @@
         async function loadHistoryRealtime() {
             if (!supabaseClient) return;
             const { data } = await supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false });
-            if (data) historyList = data;
+            if (data) {
+                historyList = data;
+                updateLastReturnIndex();
+            }
             renderHistory();
-            render(); // Met à jour l'affichage des clés (pour récupérer le dernier commentaire de rendu)
+            render(); 
 
             supabaseClient.channel('public:loan_history')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'loan_history' }, () => {
                     supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false }).then(({ data }) => {
                         if (data) { 
                             historyList = data; 
+                            updateLastReturnIndex();
                             renderHistory(); 
                             render(); 
                         }
@@ -666,6 +703,7 @@
             document.getElementById('borrow-key-id').value = id;
             document.getElementById('borrow-key-info').innerText = `Code Site : ${k.code} (${k.location})`;
             document.getElementById('borrow-comment-input').value = '';
+            document.getElementById('borrow-modal-error').classList.add('hidden');
             document.getElementById('borrow-modal').classList.remove('hidden');
         }
 
@@ -677,17 +715,30 @@
             e.preventDefault();
             const id = document.getElementById('borrow-key-id').value;
             const comment = document.getElementById('borrow-comment-input').value.trim();
+            const errDiv = document.getElementById('borrow-modal-error');
+            const spinner = document.getElementById('borrow-spinner');
+            errDiv.classList.add('hidden');
+
             if (!supabaseClient) return;
+            spinner.classList.remove('hidden');
 
-            const dateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-            await supabaseClient.from('keys').update({ 
-                status: 'emprunte', 
-                borrowed_by: currentUser.email, 
-                date: dateStr,
-                borrow_comment: comment || null
-            }).eq('id', id);
+            try {
+                const dateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+                const { error } = await supabaseClient.from('keys').update({ 
+                    status: 'emprunte', 
+                    borrowed_by: currentUser.email, 
+                    date: dateStr,
+                    borrow_comment: comment || null
+                }).eq('id', id);
 
-            closeBorrowModal();
+                if (error) throw error;
+                closeBorrowModal();
+            } catch (err) {
+                errDiv.innerText = "Erreur réseau : impossible de valider l'emprunt.";
+                errDiv.classList.remove('hidden');
+            } finally {
+                spinner.classList.add('hidden');
+            }
         }
 
         function openReturnModal(id) {
@@ -696,6 +747,7 @@
             document.getElementById('return-key-id').value = id;
             document.getElementById('return-key-info').innerText = `Code Site : ${k.code} (${k.location})`;
             document.getElementById('return-comment-input').value = '';
+            document.getElementById('return-modal-error').classList.add('hidden');
             document.getElementById('return-modal').classList.remove('hidden');
         }
 
@@ -707,32 +759,47 @@
             e.preventDefault();
             const id = document.getElementById('return-key-id').value;
             const returnComment = document.getElementById('return-comment-input').value.trim();
+            const errDiv = document.getElementById('return-modal-error');
+            const spinner = document.getElementById('return-spinner');
+            errDiv.classList.add('hidden');
+
             if (!supabaseClient) return;
+            spinner.classList.remove('hidden');
 
-            const key = keys.find(k => k.id === id);
-            if (key) {
-                const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-                
-                await supabaseClient.from('loan_history').insert([{
-                    code: key.code,
-                    location: key.location,
-                    borrowed_by: key.borrowed_by || 'Inconnu',
-                    borrowed_at: key.date || '-',
-                    borrow_comment: key.borrow_comment || null,
-                    returned_at: returnDateStr,
-                    returned_by: currentUser ? currentUser.email : 'Inconnu',
-                    return_comment: returnComment || null
-                }]);
+            try {
+                const key = keys.find(k => k.id === id);
+                if (key) {
+                    const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+                    
+                    const { error: histError } = await supabaseClient.from('loan_history').insert([{
+                        code: key.code,
+                        location: key.location,
+                        borrowed_by: key.borrowed_by || 'Inconnu',
+                        borrowed_at: key.date || '-',
+                        borrow_comment: key.borrow_comment || null,
+                        returned_at: returnDateStr,
+                        returned_by: currentUser ? currentUser.email : 'Inconnu',
+                        return_comment: returnComment || null
+                    }]);
 
-                await supabaseClient.from('keys').update({ 
-                    status: 'disponible', 
-                    borrowed_by: null, 
-                    date: null,
-                    borrow_comment: null
-                }).eq('id', id);
+                    if (histError) throw histError;
+
+                    const { error: keyError } = await supabaseClient.from('keys').update({ 
+                        status: 'disponible', 
+                        borrowed_by: null, 
+                        date: null,
+                        borrow_comment: null
+                    }).eq('id', id);
+
+                    if (keyError) throw keyError;
+                }
+                closeReturnModal();
+            } catch (err) {
+                errDiv.innerText = "Erreur réseau : impossible de valider le retour.";
+                errDiv.classList.remove('hidden');
+            } finally {
+                spinner.classList.add('hidden');
             }
-
-            closeReturnModal();
         }
 
         // --- AUTRES ACTIONS ---
@@ -748,11 +815,14 @@
             const subject = document.getElementById('contact-subject').value.trim();
             const message = document.getElementById('contact-message').value.trim();
             const succDiv = document.getElementById('contact-success');
+            const spinner = document.getElementById('contact-spinner');
 
             if (!supabaseClient || !currentUser) {
                 alert("Vous devez être connecté pour envoyer un message.");
                 return;
             }
+
+            spinner.classList.remove('hidden');
 
             try {
                 const { error } = await supabaseClient.from('messages').insert([{
@@ -771,6 +841,8 @@
                 setTimeout(() => closeContactModal(), 1500);
             } catch (err) {
                 alert("Erreur lors de l'envoi du message : " + err.message);
+            } finally {
+                spinner.classList.add('hidden');
             }
         }
 
@@ -793,6 +865,7 @@
             const info = document.getElementById('key-info').value.trim();
             
             const errDiv = document.getElementById('key-modal-error');
+            const spinner = document.getElementById('key-spinner');
             errDiv.classList.add('hidden');
 
             if (!/^[0-9_]+$/.test(code)) {
@@ -821,20 +894,28 @@
             }
 
             if (!supabaseClient) return;
+            spinner.classList.remove('hidden');
 
-            const keyData = { code, location };
-            if (info) keyData.info = info;
+            try {
+                const keyData = { code, location };
+                if (info) keyData.info = info;
 
-            if (id) {
-                await supabaseClient.from('keys').update(keyData).eq('id', id);
-            } else {
-                keyData.status = 'disponible';
-                keyData.borrowed_by = null;
-                keyData.date = null;
-                keyData.borrow_comment = null;
-                await supabaseClient.from('keys').insert([keyData]);
+                if (id) {
+                    await supabaseClient.from('keys').update(keyData).eq('id', id);
+                } else {
+                    keyData.status = 'disponible';
+                    keyData.borrowed_by = null;
+                    keyData.date = null;
+                    keyData.borrow_comment = null;
+                    await supabaseClient.from('keys').insert([keyData]);
+                }
+                closeKeyModal();
+            } catch (err) {
+                errDiv.innerText = "Erreur réseau lors de l'enregistrement.";
+                errDiv.classList.remove('hidden');
+            } finally {
+                spinner.classList.add('hidden');
             }
-            closeKeyModal();
         }
 
         async function deleteKey(id) {
@@ -913,6 +994,16 @@
             document.getElementById('contact-modal').classList.remove('hidden'); 
         }
         function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
+
+        // --- GESTION DE LA TOUCHE ÉCHAP (Escape) ---
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeKeyModal();
+                closeBorrowModal();
+                closeReturnModal();
+                closeContactModal();
+            }
+        });
 
         function renderMessages() {
             if (currentUser?.role !== 'admin') return;
@@ -1002,6 +1093,7 @@
             }
         }
 
+        // --- HISTORIQUE AVEC PAGINATION DE 50 RÉSULTATS ---
         function renderHistory() {
             const searchHistoryInput = document.getElementById('search-history');
             const query = (searchHistoryInput ? searchHistoryInput.value : '').toLowerCase().trim();
@@ -1015,13 +1107,22 @@
                 (h.return_comment && h.return_comment.toLowerCase().includes(query))
             );
 
+            const totalPages = Math.ceil(filteredHistory.length / HISTORY_PAGE_SIZE) || 1;
+            if (historyPage > totalPages) historyPage = totalPages;
+            if (historyPage < 1) historyPage = 1;
+
+            const startIndex = (historyPage - 1) * HISTORY_PAGE_SIZE;
+            const paginatedItems = filteredHistory.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
+
             const body = document.getElementById('history-table-body');
+            const paginationEl = document.getElementById('history-pagination');
             if (!body) return;
 
-            if (filteredHistory.length === 0) {
+            if (paginatedItems.length === 0) {
                 body.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique trouvé</td></tr>`;
+                if (paginationEl) paginationEl.innerHTML = '';
             } else {
-                body.innerHTML = filteredHistory.map(h => `
+                body.innerHTML = paginatedItems.map(h => `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                         <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
                         <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.location)}</td>
@@ -1033,7 +1134,25 @@
                         <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(h.return_comment || '-')}</td>
                     </tr>
                 `).join('');
+
+                if (paginationEl) {
+                    paginationEl.innerHTML = `
+                        <span class="text-xs text-slate-500 dark:text-slate-400">
+                            Affichage ${startIndex + 1} à ${Math.min(startIndex + HISTORY_PAGE_SIZE, filteredHistory.length)} sur ${filteredHistory.length} entrées
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="changeHistoryPage(-1)" ${historyPage === 1 ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Précédent</button>
+                            <span class="text-xs font-semibold px-2">Page ${historyPage} / ${totalPages}</span>
+                            <button type="button" onclick="changeHistoryPage(1)" ${historyPage === totalPages ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Suivant</button>
+                        </div>
+                    `;
+                }
             }
+        }
+
+        function changeHistoryPage(direction) {
+            historyPage += direction;
+            renderHistory();
         }
 
         function render() {
@@ -1079,9 +1198,13 @@
                     tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
                 } else {
                     tableBody.innerHTML = filteredKeys.map(k => {
-                        // Recherche du dernier historique de retour pour cette clé spécifique (via son code)
-                        const lastHistoryEntry = historyList.find(h => h.code.toLowerCase() === k.code.toLowerCase());
-                        const lastReturnComment = lastHistoryEntry ? lastHistoryEntry.return_comment : null;
+                        // Utilisation de l'index Map optimisé (Optimisation 1)
+                        const lastHistoryEntry = lastReturnMap.get(k.code.toLowerCase());
+                        
+                        let displayReturnInfo = '<span class="text-slate-300 dark:text-slate-600 not-italic">-</span>';
+                        if (lastHistoryEntry && lastHistoryEntry.return_comment) {
+                            displayReturnInfo = `<span class="text-xs text-slate-600 dark:text-slate-300 font-medium">${escapeHtml(lastHistoryEntry.returned_at)}</span> : <span class="italic text-slate-500 dark:text-slate-400">"${escapeHtml(lastHistoryEntry.return_comment)}"</span>`;
+                        }
 
                         return `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
@@ -1105,8 +1228,8 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">
-                                ${lastReturnComment ? escapeHtml(lastReturnComment) : '<span class="text-slate-300 dark:text-slate-600 not-italic">-</span>'}
+                            <td class="p-4 max-w-sm">
+                                ${displayReturnInfo}
                             </td>
                             <td class="p-4 text-right space-x-2">
                                 <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1" title="Modifier"><i class="fa-solid fa-pen"></i></button>
