@@ -143,7 +143,7 @@
         </aside>
 
         <!-- Contenu Principal -->
-        <main class="md:ml-64 p-4 sm:p-6 md:p-8 min-h-screen">
+        <main class="md:ml-64 p-3 sm:p-6 md:p-8 min-h-screen">
             <!-- Tableau de bord -->
             <section id="tab-dashboard" class="space-y-6">
                 <h2 class="text-2xl font-bold">Tableau de bord</h2>
@@ -179,10 +179,10 @@
             </section>
 
             <!-- Liste des Clés -->
-            <section id="tab-keys" class="hidden space-y-6">
+            <section id="tab-keys" class="hidden space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h2 class="text-2xl font-bold">Gestion des Clés</h2>
-                    <button type="button" onclick="openKeyModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2">
+                    <button type="button" onclick="openKeyModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-plus"></i> Ajouter une clé
                     </button>
                 </div>
@@ -192,15 +192,16 @@
                     <input type="text" id="search-keys" oninput="render()" placeholder="Rechercher par code site ou lieu..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
 
+                <!-- Conteneur du tableau optimisé mobile : Les 3 premières colonnes restent toujours visibles -->
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[700px]">
+                    <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
                             <tr>
-                                <th class="p-4">Code Site</th>
-                                <th class="p-4">Endroit de stockage</th>
-                                <th class="p-4">Statut / Action</th>
-                                <th class="p-4">Dernier commentaire de retour</th>
-                                <th class="p-4 text-right">Actions</th>
+                                <th class="p-3 sm:p-4 whitespace-nowrap">Code Site</th>
+                                <th class="p-3 sm:p-4 whitespace-nowrap">Endroit de stockage</th>
+                                <th class="p-3 sm:p-4 whitespace-nowrap">Statut / Action</th>
+                                <th class="p-3 sm:p-4 hidden sm:table-cell">Dernier commentaire de retour</th>
+                                <th class="p-3 sm:p-4 text-right whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="keys-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
@@ -435,7 +436,6 @@
         let profiles = [];
         let messages = [];
 
-        // État de l'indexation rapide des retours & de la pagination
         let lastReturnMap = new Map();
         let historyPage = 1;
         const HISTORY_PAGE_SIZE = 50;
@@ -449,12 +449,10 @@
                       .replace(/'/g, "&#039;");
         }
 
-        // --- VALIDATION DU CODE SITE ---
         function validateKeyCodeInput(input) {
             input.value = input.value.replace(/[^0-9_]/g, '');
         }
 
-        // --- GESTION DU THÈME ---
         let currentTheme = localStorage.getItem('theme') || 'dark';
 
         function applyTheme(theme) {
@@ -472,7 +470,6 @@
         function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
         applyTheme(currentTheme);
 
-        // --- GESTION DES LISTES D'EMPLACEMENT DYNAMIQUES ---
         function updateLocationOptions(selectedNum1 = null, selectedNum2 = null) {
             const type = document.getElementById('loc-type').value;
             const num1Select = document.getElementById('loc-num1');
@@ -501,10 +498,8 @@
             }
         }
 
-        // --- INDEXATION DES DERNIERS RETOURS (Optimisation 1) ---
         function updateLastReturnIndex() {
             lastReturnMap.clear();
-            // historyList est trié par date décroissante, on garde le premier retour trouvé avec un commentaire
             for (let h of historyList) {
                 const keyLower = h.code.toLowerCase();
                 if (!lastReturnMap.has(keyLower) && h.return_comment) {
@@ -513,7 +508,6 @@
             }
         }
 
-        // --- AUTHENTIFICATION ---
         function toggleAuthMode() {
             isRegistering = !isRegistering;
             document.getElementById('auth-title').innerText = isRegistering ? "Inscription ClésLR" : "Connexion ClésLR";
@@ -626,7 +620,6 @@
             location.reload();
         }
 
-        // --- CHARGEMENT DES DONNÉES TEMPS RÉEL ---
         async function loadKeysRealtime() {
             if (!supabaseClient) return;
             const { data } = await supabaseClient.from('keys').select('*');
@@ -696,7 +689,6 @@
                 }).subscribe();
         }
 
-        // --- ACTIONS SUR LES CLÉS (EMPRUNT / RETOUR) ---
         function openBorrowModal(id) {
             const k = keys.find(x => x.id === id);
             if (!k) return;
@@ -802,7 +794,6 @@
             }
         }
 
-        // --- AUTRES ACTIONS ---
         async function deleteMessage(id) {
             if (currentUser?.role !== 'admin') return;
             if (confirm("Voulez-vous supprimer ce message ?")) {
@@ -925,7 +916,6 @@
             }
         }
 
-        // --- NAVIGATION ET RENDU ---
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
@@ -995,7 +985,6 @@
         }
         function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
 
-        // --- GESTION DE LA TOUCHE ÉCHAP (Escape) ---
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeKeyModal();
@@ -1093,7 +1082,6 @@
             }
         }
 
-        // --- HISTORIQUE AVEC PAGINATION DE 50 RÉSULTATS ---
         function renderHistory() {
             const searchHistoryInput = document.getElementById('search-history');
             const query = (searchHistoryInput ? searchHistoryInput.value : '').toLowerCase().trim();
@@ -1175,7 +1163,6 @@
                 return locA.localeCompare(locB);
             });
 
-            // Badge "Mes emprunts"
             const myLoans = keys.filter(k => k.status === 'emprunte' && k.borrowed_by === currentUser?.email);
             const myLoansBadge = document.getElementById('my-loans-badge');
             if (myLoans.length > 0) {
@@ -1198,7 +1185,6 @@
                     tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
                 } else {
                     tableBody.innerHTML = filteredKeys.map(k => {
-                        // Utilisation de l'index Map optimisé (Optimisation 1)
                         const lastHistoryEntry = lastReturnMap.get(k.code.toLowerCase());
                         
                         let displayReturnInfo = '<span class="text-slate-300 dark:text-slate-600 not-italic">-</span>';
@@ -1208,12 +1194,12 @@
 
                         return `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-4">
+                            <td class="p-3 sm:p-4 whitespace-nowrap">
                                 <div class="font-semibold">${escapeHtml(k.code)}</div>
                                 ${k.info ? `<div class="text-xs text-slate-400 dark:text-slate-400 mt-0.5">${escapeHtml(k.info)}</div>` : ''}
                             </td>
-                            <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.location)}</td>
-                            <td class="p-4">
+                            <td class="p-3 sm:p-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">${escapeHtml(k.location)}</td>
+                            <td class="p-3 sm:p-4 whitespace-nowrap">
                                 <div class="space-y-1.5">
                                     <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'}">
                                         ${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}
@@ -1228,12 +1214,12 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="p-4 max-w-sm">
+                            <td class="p-3 sm:p-4 max-w-sm hidden sm:table-cell">
                                 ${displayReturnInfo}
                             </td>
-                            <td class="p-4 text-right space-x-2">
-                                <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1" title="Modifier"><i class="fa-solid fa-pen"></i></button>
-                                ${currentUser ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
+                            <td class="p-3 sm:p-4 text-right space-x-1 whitespace-nowrap">
+                                <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1.5" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+                                ${currentUser ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1.5" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
                             </td>
                         </tr>
                     `}).join('');
@@ -1250,11 +1236,12 @@
 
             const loansTableBody = document.getElementById('loans-table-body');
             if (loansTableBody) {
-                if (borrowed.length === 0) {
+                if (borrowed.length === 100) { // check if empty
+                    loansTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
+                } else if (borrowed.length === 0) {
                     loansTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
                 } else {
-                    loansTableBody.innerHTML = borrowed.map(k => {
-                        return `
+                    loansTableBody.innerHTML = borrowed.map(k => `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                             <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
                             <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.borrowed_by || 'Inconnu')}</td>
@@ -1264,7 +1251,7 @@
                                 <button type="button" onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>
                             </td>
                         </tr>
-                    `}).join('');
+                    `).join('');
                 }
             }
 
