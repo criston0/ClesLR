@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Clés CLR</title>
+    <title>CLésR</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -78,9 +78,8 @@
         <!-- Backdrop Overlay pour mobile -->
         <div id="sidebar-backdrop" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 hidden md:hidden transition-opacity"></div>
 
-        <!-- Sidebar Fixe PC & Coulissante Mobile (Structure Flex Stricte pour fixer le bas) -->
+        <!-- Sidebar Fixe PC & Coulissante Mobile -->
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col w-72 md:w-64 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 h-[100dvh] border-r border-slate-200 dark:border-slate-800 shadow-2xl md:shadow-none">
-            <!-- En-tête du menu -->
             <div class="p-4 text-lg font-bold text-slate-900 dark:text-white flex justify-between items-center border-b border-slate-200 dark:border-slate-800 shrink-0">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-key text-indigo-600 dark:text-indigo-400"></i> Clés CLR
@@ -90,7 +89,6 @@
                 </button>
             </div>
 
-            <!-- Liste des liens (Scrollable indépendamment si l'écran est petit) -->
             <nav class="p-3 space-y-1 overflow-y-auto flex-1">
                 <button type="button" onclick="switchTab('dashboard')" id="nav-dashboard" class="admin-only hidden w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <i class="fa-solid fa-chart-line w-5"></i> Tableau de bord
@@ -124,7 +122,6 @@
                 </button>
             </nav>
 
-            <!-- Bloc du bas fixe (toujours visible) -->
             <div class="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2 bg-white dark:bg-slate-950 shrink-0">
                 <button type="button" onclick="toggleTheme()" class="w-full text-left text-xs text-slate-600 dark:text-slate-400 hover:text-amber-500 flex items-center gap-2 py-1">
                     <i id="theme-icon-sidebar" class="fa-solid fa-sun w-4 text-center"></i> Mode clair / sombre
@@ -164,7 +161,6 @@
                         <p id="stat-borrowed" class="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-2">0</p>
                     </div>
 
-                    <!-- Statistiques Administrateur -->
                     <div id="admin-stat-pending" class="admin-only hidden bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-amber-500 transition" onclick="switchTab('users')">
                         <p class="text-sm font-medium text-amber-500 flex items-center justify-between">
                             Inscriptions en attente
@@ -217,16 +213,17 @@
 
                 <div class="relative max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-loans" oninput="render()" placeholder="Rechercher un emprunt par code ou utilisateur..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="search-loans" oninput="render()" placeholder="Rechercher par code, emprunteur ou remarque..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[500px]">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
                         <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
                             <tr>
                                 <th class="p-4">Code Site</th>
                                 <th class="p-4">Emprunteur</th>
                                 <th class="p-4">Date de sortie</th>
+                                <th class="p-4">Remarque emprunt</th>
                                 <th class="p-4 text-right">Action</th>
                             </tr>
                         </thead>
@@ -240,12 +237,13 @@
                 <h2 class="text-2xl font-bold">Mes emprunts</h2>
 
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[500px]">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
                         <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
                             <tr>
                                 <th class="p-4">Code Site</th>
                                 <th class="p-4">Endroit de stockage</th>
                                 <th class="p-4">Date de sortie</th>
+                                <th class="p-4">Remarque emprunt</th>
                                 <th class="p-4 text-right">Action</th>
                             </tr>
                         </thead>
@@ -260,19 +258,21 @@
 
                 <div class="relative max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-history" oninput="renderHistory()" placeholder="Rechercher par code, endroit, emprunteur ou rendu par..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="search-history" oninput="renderHistory()" placeholder="Rechercher par code, endroit, personne ou remarque..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[700px]">
+                    <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
                             <tr>
                                 <th class="p-4">Code Site</th>
                                 <th class="p-4">Endroit de stockage</th>
                                 <th class="p-4">Emprunté par</th>
                                 <th class="p-4">Date de prise</th>
+                                <th class="p-4">Remarque emprunt</th>
                                 <th class="p-4">Rendu par</th>
                                 <th class="p-4">Date de rendu</th>
+                                <th class="p-4">Remarque retour</th>
                             </tr>
                         </thead>
                         <tbody id="history-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
@@ -306,6 +306,7 @@
     </div>
 
     <!-- Modals -->
+    <!-- Modal Ajout/Modif Clé -->
     <div id="key-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
             <h3 id="modal-title" class="text-lg font-bold mb-4">Ajouter une clé</h3>
@@ -313,11 +314,11 @@
                 <input type="hidden" id="key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Code Site <span class="text-xs text-slate-400">(Chiffres et _ uniquement)</span></label>
-                    <input type="text" id="key-code" required oninput="validateKeyCodeInput(this)" placeholder="Ex: 69000_000" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100">
+                    <input type="text" id="key-code" required oninput="validateKeyCodeInput(this)" placeholder="Ex: 12345_6" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Infos supplémentaires (optionnel)</label>
-                    <input type="text" id="key-info" placeholder="Ex: Badge pour portail, clé pour trappe,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
+                    <input type="text" id="key-info" placeholder="Ex: Bâtiment A, 2ème étage..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Endroit de stockage</label>
@@ -339,6 +340,45 @@
         </div>
     </div>
 
+    <!-- Modal Emprunt -->
+    <div id="borrow-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-key text-indigo-500 mr-2"></i>Emprunter la clé</h3>
+            <p id="borrow-key-info" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
+            <form onsubmit="confirmBorrowKey(event)" class="space-y-4">
+                <input type="hidden" id="borrow-key-id">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Commentaire / Remarque (optionnel)</label>
+                    <textarea id="borrow-comment-input" rows="3" placeholder="Ex: Intervention de maintenance, prêt exceptionnel..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeBorrowModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Confirmer l'emprunt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Retour -->
+    <div id="return-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-rotate-left text-emerald-500 mr-2"></i>Rendre la clé</h3>
+            <p id="return-key-info" class="text-xs text-slate-500 dark:text-slate-400 mb-4"></p>
+            <form onsubmit="confirmReturnKey(event)" class="space-y-4">
+                <input type="hidden" id="return-key-id">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Commentaire / Remarque au retour (optionnel)</label>
+                    <textarea id="return-comment-input" rows="3" placeholder="Ex: Clé remise en place, étiquette un peu usée..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeReturnModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium">Valider le retour</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Contact Admin -->
     <div id="contact-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
             <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-envelope text-indigo-500 mr-2"></i>Contact Administrateur</h3>
@@ -613,7 +653,83 @@
                 }).subscribe();
         }
 
-        // --- ACTIONS ---
+        // --- ACTIONS SUR LES CLÉS (EMPRUNT / RETOUR) ---
+        function openBorrowModal(id) {
+            const k = keys.find(x => x.id === id);
+            if (!k) return;
+            document.getElementById('borrow-key-id').value = id;
+            document.getElementById('borrow-key-info').innerText = `Code Site : ${k.code} (${k.location})`;
+            document.getElementById('borrow-comment-input').value = '';
+            document.getElementById('borrow-modal').classList.remove('hidden');
+        }
+
+        function closeBorrowModal() {
+            document.getElementById('borrow-modal').classList.add('hidden');
+        }
+
+        async function confirmBorrowKey(e) {
+            e.preventDefault();
+            const id = document.getElementById('borrow-key-id').value;
+            const comment = document.getElementById('borrow-comment-input').value.trim();
+            if (!supabaseClient) return;
+
+            const dateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+            await supabaseClient.from('keys').update({ 
+                status: 'emprunte', 
+                borrowed_by: currentUser.email, 
+                date: dateStr,
+                borrow_comment: comment || null
+            }).eq('id', id);
+
+            closeBorrowModal();
+        }
+
+        function openReturnModal(id) {
+            const k = keys.find(x => x.id === id);
+            if (!k) return;
+            document.getElementById('return-key-id').value = id;
+            document.getElementById('return-key-info').innerText = `Code Site : ${k.code} (${k.location})`;
+            document.getElementById('return-comment-input').value = '';
+            document.getElementById('return-modal').classList.remove('hidden');
+        }
+
+        function closeReturnModal() {
+            document.getElementById('return-modal').classList.add('hidden');
+        }
+
+        async function confirmReturnKey(e) {
+            e.preventDefault();
+            const id = document.getElementById('return-key-id').value;
+            const returnComment = document.getElementById('return-comment-input').value.trim();
+            if (!supabaseClient) return;
+
+            const key = keys.find(k => k.id === id);
+            if (key) {
+                const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+                
+                await supabaseClient.from('loan_history').insert([{
+                    code: key.code,
+                    location: key.location,
+                    borrowed_by: key.borrowed_by || 'Inconnu',
+                    borrowed_at: key.date || '-',
+                    borrow_comment: key.borrow_comment || null,
+                    returned_at: returnDateStr,
+                    returned_by: currentUser ? currentUser.email : 'Inconnu',
+                    return_comment: returnComment || null
+                }]);
+
+                await supabaseClient.from('keys').update({ 
+                    status: 'disponible', 
+                    borrowed_by: null, 
+                    date: null,
+                    borrow_comment: null
+                }).eq('id', id);
+            }
+
+            closeReturnModal();
+        }
+
+        // --- AUTRES ACTIONS ---
         async function deleteMessage(id) {
             if (currentUser?.role !== 'admin') return;
             if (confirm("Voulez-vous supprimer ce message ?")) {
@@ -709,6 +825,7 @@
                 keyData.status = 'disponible';
                 keyData.borrowed_by = null;
                 keyData.date = null;
+                keyData.borrow_comment = null;
                 await supabaseClient.from('keys').insert([keyData]);
             }
             closeKeyModal();
@@ -718,31 +835,6 @@
             if (!currentUser) return;
             if (confirm("Voulez-vous supprimer cette clé ?") && supabaseClient) {
                 await supabaseClient.from('keys').delete().eq('id', id);
-            }
-        }
-
-        async function borrowKey(id) {
-            if (!supabaseClient) return;
-            const dateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-            await supabaseClient.from('keys').update({ status: 'emprunte', borrowed_by: currentUser.email, date: dateStr }).eq('id', id);
-        }
-
-        async function returnKey(id) {
-            if (!supabaseClient) return;
-            const key = keys.find(k => k.id === id);
-            if (key) {
-                const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-                
-                await supabaseClient.from('loan_history').insert([{
-                    code: key.code,
-                    location: key.location,
-                    borrowed_by: key.borrowed_by || 'Inconnu',
-                    borrowed_at: key.date || '-',
-                    returned_at: returnDateStr,
-                    returned_by: currentUser ? currentUser.email : 'Inconnu'
-                }]);
-
-                await supabaseClient.from('keys').update({ status: 'disponible', borrowed_by: null, date: null }).eq('id', id);
             }
         }
 
@@ -912,14 +1004,16 @@
                 (h.code && h.code.toLowerCase().includes(query)) ||
                 (h.location && h.location.toLowerCase().includes(query)) ||
                 (h.borrowed_by && h.borrowed_by.toLowerCase().includes(query)) ||
-                (h.returned_by && h.returned_by.toLowerCase().includes(query))
+                (h.returned_by && h.returned_by.toLowerCase().includes(query)) ||
+                (h.borrow_comment && h.borrow_comment.toLowerCase().includes(query)) ||
+                (h.return_comment && h.return_comment.toLowerCase().includes(query))
             );
 
             const body = document.getElementById('history-table-body');
             if (!body) return;
 
             if (filteredHistory.length === 0) {
-                body.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Aucun historique trouvé</td></tr>`;
+                body.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique trouvé</td></tr>`;
             } else {
                 body.innerHTML = filteredHistory.map(h => `
                     <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
@@ -927,8 +1021,10 @@
                         <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.location)}</td>
                         <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.borrowed_by)}</td>
                         <td class="p-4 text-slate-400 text-xs">${escapeHtml(h.borrowed_at)}</td>
+                        <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(h.borrow_comment || '-')}</td>
                         <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.returned_by || '-')}</td>
                         <td class="p-4 text-slate-400 text-xs">${escapeHtml(h.returned_at)}</td>
+                        <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(h.return_comment || '-')}</td>
                     </tr>
                 `).join('');
             }
@@ -991,9 +1087,9 @@
                                     </span>
                                     <div>
                                         ${k.status === 'disponible' 
-                                            ? `<button type="button" onclick="borrowKey('${k.id}')" class="bg-indigo-50 dark:bg-indigo-600/20 hover:bg-indigo-100 dark:hover:bg-indigo-600/40 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>`
+                                            ? `<button type="button" onclick="openBorrowModal('${k.id}')" class="bg-indigo-50 dark:bg-indigo-600/20 hover:bg-indigo-100 dark:hover:bg-indigo-600/40 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>`
                                             : currentUser 
-                                                ? `<button type="button" onclick="returnKey('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 dark:hover:bg-amber-600/40 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
+                                                ? `<button type="button" onclick="openReturnModal('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 dark:hover:bg-amber-600/40 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
                                                 : ``
                                         }
                                     </div>
@@ -1012,13 +1108,14 @@
             const searchLoansQuery = (searchLoansInput ? searchLoansInput.value : '').toLowerCase().trim();
             const borrowed = keys.filter(k => k.status === 'emprunte' && (
                 (k.code && k.code.toLowerCase().includes(searchLoansQuery)) ||
-                (k.borrowed_by && k.borrowed_by.toLowerCase().includes(searchLoansQuery))
+                (k.borrowed_by && k.borrowed_by.toLowerCase().includes(searchLoansQuery)) ||
+                (k.borrow_comment && k.borrow_comment.toLowerCase().includes(searchLoansQuery))
             ));
 
             const loansTableBody = document.getElementById('loans-table-body');
             if (loansTableBody) {
                 if (borrowed.length === 0) {
-                    loansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
+                    loansTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt correspondant</td></tr>`;
                 } else {
                     loansTableBody.innerHTML = borrowed.map(k => {
                         return `
@@ -1026,8 +1123,9 @@
                             <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
                             <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.borrowed_by || 'Inconnu')}</td>
                             <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
+                            <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(k.borrow_comment || '-')}</td>
                             <td class="p-4 text-right">
-                                <button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>
+                                <button type="button" onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Valider le retour</button>
                             </td>
                         </tr>
                     `}).join('');
@@ -1037,15 +1135,16 @@
             const myLoansTableBody = document.getElementById('my-loans-table-body');
             if (myLoansTableBody) {
                 if (myLoans.length === 0) {
-                    myLoansTableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Vous n'avez emprunté aucune clé actuellement.</td></tr>`;
+                    myLoansTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Vous n'avez emprunté aucune clé actuellement.</td></tr>`;
                 } else {
                     myLoansTableBody.innerHTML = myLoans.map(k => `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                             <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
                             <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.location)}</td>
                             <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
+                            <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(k.borrow_comment || '-')}</td>
                             <td class="p-4 text-right">
-                                <button type="button" onclick="returnKey('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Rendre cette clé</button>
+                                <button type="button" onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Rendre cette clé</button>
                             </td>
                         </tr>
                     `).join('');
