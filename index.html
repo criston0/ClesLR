@@ -578,17 +578,32 @@
         function updateLocationOptions(targetSiteId = null, selectedNum1 = null, selectedNum2 = null) {
             const siteSelect = document.getElementById('key-site-select');
             const siteIdToUse = targetSiteId || (siteSelect ? siteSelect.value : null) || activeSiteId;
-            const type = document.getElementById('loc-type').value;
+            const typeSelect = document.getElementById('loc-type');
+            let type = typeSelect.value;
+    
             const num1Select = document.getElementById('loc-num1');
             const num2Select = document.getElementById('loc-num2');
             if (!num1Select || !num2Select) return;
 
+            // Récupérer tous les stockages de ce site
+            const siteStorages = siteStoragesList.filter(st => st.site_id === siteIdToUse);
+
+            // Vérifier si le type actuel (ex: BAC) existe pour ce site. Sinon, basculer sur l'autre s'il est disponible.
+            const hasCurrentType = siteStorages.some(st => st.storage_type === type);
+            if (!hasCurrentType && siteStorages.length > 0) {
+                const alternativeStorage = siteStorages.find(st => st.storage_type !== type);
+                if (alternativeStorage) {
+                    type = alternativeStorage.storage_type;
+                    typeSelect.value = type; // Met à jour le <select> visuellement
+                }
+            }
+
             num1Select.innerHTML = '';
             num2Select.innerHTML = '';
 
-            const activeStorages = siteStoragesList.filter(st => st.site_id === siteIdToUse && st.storage_type === type);
+            const activeStorages = siteStorages.filter(st => st.storage_type === type);
             const uniqueNumbers = [...new Set(activeStorages.map(st => st.storage_number))].sort((a, b) => a - b);
-            
+    
             uniqueNumbers.forEach(num => {
                 const opt = document.createElement('option');
                 opt.value = num;
