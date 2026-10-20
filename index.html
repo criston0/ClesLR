@@ -190,7 +190,7 @@
 
                 <div class="relative max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-keys" oninput="render()" placeholder="Rechercher par code site ou lieu..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="search-keys" oninput="keysPage=1; render()" placeholder="Rechercher par code site ou lieu..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
 
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -207,6 +207,8 @@
                         <tbody id="keys-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
                     </table>
                 </div>
+                <!-- Pagination de la liste des clés -->
+                <div id="keys-pagination" class="flex items-center justify-between px-2 pt-2"></div>
             </section>
 
             <!-- Emprunts en cours -->
@@ -458,6 +460,9 @@
         let lastReturnMap = new Map();
         let historyPage = 1;
         const HISTORY_PAGE_SIZE = 50;
+
+        let keysPage = 1;
+        const KEYS_PAGE_SIZE = 20;
 
         function escapeHtml(str) {
             if (!str) return '';
@@ -1220,6 +1225,11 @@
             renderHistory();
         }
 
+        function changeKeysPage(direction) {
+            keysPage += direction;
+            render();
+        }
+
         function render() {
             const statTotal = document.getElementById('stat-total');
             const statAvailable = document.getElementById('stat-available');
@@ -1256,12 +1266,21 @@
                 (k.location && k.location.toLowerCase().includes(searchKeysQuery))
             );
 
+            const totalKeysPages = Math.ceil(filteredKeys.length / KEYS_PAGE_SIZE) || 1;
+            if (keysPage > totalKeysPages) keysPage = totalKeysPages;
+            if (keysPage < 1) keysPage = 1;
+
+            const startKeysIndex = (keysPage - 1) * KEYS_PAGE_SIZE;
+            const paginatedKeys = filteredKeys.slice(startKeysIndex, startKeysIndex + KEYS_PAGE_SIZE);
+
             const tableBody = document.getElementById('keys-table-body');
+            const keysPaginationEl = document.getElementById('keys-pagination');
             if (tableBody) {
-                if (filteredKeys.length === 0) {
+                if (paginatedKeys.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
+                    if (keysPaginationEl) keysPaginationEl.innerHTML = '';
                 } else {
-                    tableBody.innerHTML = filteredKeys.map(k => {
+                    tableBody.innerHTML = paginatedKeys.map(k => {
                         const lastHistoryEntry = lastReturnMap.get(k.code.toLowerCase());
                         
                         let displayReturnInfo = '<span class="text-slate-300 dark:text-slate-600 not-italic">-</span>';
@@ -1305,6 +1324,19 @@
                             </td>
                         </tr>
                     `}).join('');
+
+                    if (keysPaginationEl) {
+                        keysPaginationEl.innerHTML = `
+                            <span class="text-xs text-slate-500 dark:text-slate-400">
+                                Affichage ${startKeysIndex + 1} à ${Math.min(startKeysIndex + KEYS_PAGE_SIZE, filteredKeys.length)} sur ${filteredKeys.length} entrées
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="changeKeysPage(-1)" ${keysPage === 1 ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Précédent</button>
+                                <span class="text-xs font-semibold px-2">Page ${keysPage} / ${totalKeysPages}</span>
+                                <button type="button" onclick="changeKeysPage(1)" ${keysPage === totalKeysPages ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Suivant</button>
+                            </div>
+                        `;
+                    }
                 }
             }
 
