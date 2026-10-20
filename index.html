@@ -368,7 +368,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Infos supplémentaires (optionnel)</label>
-                    <input type="text" id="key-info" placeholder="Ex: badge portail,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
+                    <input type="text" id="key-info" placeholder="Ex: badge portail, clé trappe..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
                 </div>
                 <!-- Site de rattachement placé juste au-dessus du choix du stockage -->
                 <div>
@@ -388,7 +388,7 @@
                 </div>
                 <div id="key-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeKeyModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100">Annuler</button>
+                    <button type="button" onclick="closeKeyModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 dark:hover:text-white transition">Annuler</button>
                     <button type="submit" id="key-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-2">
                         <span>Enregistrer</span>
                         <i id="key-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
@@ -472,7 +472,7 @@
                 <input type="hidden" id="borrow-key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Commentaire / Remarque (optionnel)</label>
-                    <textarea id="borrow-comment-input" rows="3" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"></textarea>
+                    <textarea id="borrow-comment-input" rows="3" placeholder="Ex: prêt pour MOE (contact),..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"></textarea>
                 </div>
                 <div id="borrow-modal-error" class="hidden text-red-500 text-xs font-semibold text-center"></div>
                 <div class="flex justify-end gap-2 pt-2">
@@ -492,7 +492,7 @@
                 <input type="hidden" id="return-key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Commentaire au retour (optionnel)</label>
-                    <textarea id="return-comment-input" rows="3" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"></textarea>
+                    <textarea id="return-comment-input" rows="3" placeholder="Ex: vigik ne marche plus,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"></textarea>
                 </div>
                 <div id="return-modal-error" class="hidden text-red-500 text-xs font-semibold text-center"></div>
                 <div class="flex justify-end gap-2 pt-2">
@@ -601,9 +601,12 @@
             num1Select.innerHTML = '';
             num2Select.innerHTML = '';
 
-            const activeStorages = siteStorages.filter(st => st.storage_type === type);
-            const uniqueNumbers = [...new Set(activeStorages.map(st => st.storage_number))].sort((a, b) => a - b);
-    
+            // Filtrer les stockages pour ce site précis et ce type précis
+            const activeStorages = siteStoragesList.filter(st => st.site_id === siteIdToUse && st.storage_type === type);
+
+            // Extraire tous les numéros de boîtes distincts et les trier numériquement
+            const uniqueNumbers = [...new Set(activeStorages.map(st => Number(st.storage_number)))].sort((a, b) => a - b);
+
             uniqueNumbers.forEach(num => {
                 const opt = document.createElement('option');
                 opt.value = num;
