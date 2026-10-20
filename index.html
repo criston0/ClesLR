@@ -1148,46 +1148,46 @@ function handleKeysSiteFilterChange(val) {
 
         // --- GESTION DES SITES & STOCKAGES UNITAIRES ---
         function renderSitesManagement() {
-            const listContainer = document.getElementById('sites-list-container');
-            if (!listContainer) return;
+    const listContainer = document.getElementById('sites-list-container');
+    if (!listContainer) return;
 
-            if (sitesList.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-slate-400">Aucun site disponible.</p>`;
-                return;
-            }
+    if (sitesList.length === 0) {
+        listContainer.innerHTML = `<p class="text-xs text-slate-400">Aucun site disponible.</p>`;
+        return;
+    }
 
-            listContainer.innerHTML = sitesList.map(s => `
-                <div onclick="selectManageSite('${s.id}')" class="p-3 rounded-lg cursor-pointer transition border ${activeSiteId === s.id ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400 font-semibold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50'} flex justify-between items-center">
-                    <span>${escapeHtml(s.name)}</span>
-                    ${s.name !== 'CLR' ? `<button type="button" onclick="event.stopPropagation(); deleteSite('${s.id}')" class="text-slate-400 hover:text-red-500 text-xs p-1"><i class="fa-solid fa-trash"></i></button>` : ''}
-                </div>
+    listContainer.innerHTML = sitesList.map(s => `
+        <div onclick="selectManageSite('${s.id}')" class="p-3 rounded-lg cursor-pointer transition border ${activeSiteId === s.id ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400 font-semibold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 dark:text-slate-200'} flex justify-between items-center">
+            <span>${escapeHtml(s.name)}</span>
+            ${s.name !== 'CLR' ? `<button type="button" onclick="event.stopPropagation(); deleteSite('${s.id}')" class="text-slate-400 hover:text-red-500 text-xs p-1"><i class="fa-solid fa-trash"></i></button>` : ''}
+        </div>
+    `).join('');
+
+    const activeSite = sitesList.find(s => s.id === activeSiteId);
+    const titleEl = document.getElementById('selected-site-title');
+    const btnAddStorage = document.getElementById('btn-add-storage');
+    const tbody = document.getElementById('storages-table-body');
+
+    if (activeSite) {
+        if (titleEl) titleEl.innerText = `Site : ${activeSite.name}`;
+        if (btnAddStorage) btnAddStorage.classList.remove('hidden');
+
+        const siteStorages = siteStoragesList.filter(st => st.site_id === activeSiteId);
+        if (siteStorages.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Aucun stockage configuré.</td></tr>`;
+        } else {
+            tbody.innerHTML = siteStorages.map(st => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                    <td class="p-3 font-semibold dark:text-slate-200">${escapeHtml(st.storage_type)} ${st.storage_number}</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">${st.capacity} alvéoles</td>
+                    <td class="p-3 text-right">
+                        <button type="button" onclick="deleteSpecificStorage('${st.id}', '${st.storage_type}', ${st.storage_number})" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
             `).join('');
-
-            const activeSite = sitesList.find(s => s.id === activeSiteId);
-            const titleEl = document.getElementById('selected-site-title');
-            const btnAddStorage = document.getElementById('btn-add-storage');
-            const tbody = document.getElementById('storages-table-body');
-
-            if (activeSite) {
-                if (titleEl) titleEl.innerText = `Site : ${activeSite.name}`;
-                if (btnAddStorage) btnAddStorage.classList.remove('hidden');
-
-                const siteStorages = siteStoragesList.filter(st => st.site_id === activeSiteId);
-                if (siteStorages.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Aucun stockage configuré.</td></tr>`;
-                } else {
-                    tbody.innerHTML = siteStorages.map(st => `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-3 font-semibold">${escapeHtml(st.storage_type)} ${st.storage_number}</td>
-                            <td class="p-3 text-slate-600 dark:text-slate-300">${st.capacity} alvéoles</td>
-                            <td class="p-3 text-right">
-                                <button type="button" onclick="deleteSpecificStorage('${st.id}', '${st.storage_type}', ${st.storage_number})" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            }
         }
+    }
+}
 
         function selectManageSite(siteId) { activeSiteId = siteId; renderSitesManagement(); }
         
