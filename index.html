@@ -1566,21 +1566,25 @@ function showConfirmModal(title, text, callback) {
                 returnInfo = `<span class="font-medium">${escapeHtml(lastHistory.returned_at)}</span> : <span class="italic">"${escapeHtml(lastHistory.return_comment)}"</span>`;
             }
 
-            // 3. Récupérer le nom du site et créer le badge discret si le filtre est sur "Afficher tout"
+            // Récupérer le nom du site et créer le badge discret si le filtre est sur "Afficher tout"
             const siteObj = sitesList.find(s => s.id === k.site_id);
             const siteName = siteObj ? siteObj.name : '';
             const siteBadge = (currentKeysSiteFilter === 'all' && siteName) 
                 ? `<span class="block text-[11px] text-slate-400 dark:text-slate-500 font-medium">${escapeHtml(siteName)}</span>` 
                 : '';
 
+            // Ligne secondaire dédiée au commentaire de retour sur mobile (occupe toute la largeur)
+            const mobileReturnRow = (lastHistory && lastHistory.return_comment) ? `
+                <tr class="sm:hidden bg-slate-50/60 dark:bg-slate-800/40">
+                    <td colspan="5" class="px-3 py-2 text-xs italic text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
+                        <span class="font-semibold not-italic text-slate-600 dark:text-slate-300">Dernier retour :</span> ${escapeHtml(lastHistory.returned_at)} - "${escapeHtml(lastHistory.return_comment)}"
+                    </td>
+                </tr>
+            ` : '';
+
             return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                    <td class="p-3 sm:p-4">
-                        <div class="font-semibold">${escapeHtml(k.code)}</div>
-                        ${k.info ? `<div class="text-xs text-slate-400">${escapeHtml(k.info)}</div>` : ''}
-                        <!-- Affichage du dernier retour uniquement sur mobile -->
-                        ${lastHistory && lastHistory.return_comment ? `<div class="mt-1 text-[11px] text-slate-500 dark:text-slate-400 sm:hidden italic">Dernier retour : <span class="font-medium">${escapeHtml(lastHistory.returned_at)}</span> - "${escapeHtml(lastHistory.return_comment)}"</div>` : ''}
-                    </td>
+                    <td class="p-3 sm:p-4"><div class="font-semibold">${escapeHtml(k.code)}</div>${k.info ? `<div class="text-xs text-slate-400">${escapeHtml(k.info)}</div>` : ''}</td>
                     <td class="p-3 sm:p-4">
                         ${escapeHtml(k.location)}
                         ${siteBadge}
@@ -1595,6 +1599,7 @@ function showConfirmModal(title, text, callback) {
                         ${currentUser ? `<button onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1.5" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
                     </td>
                 </tr>
+                ${mobileReturnRow}
             `;
         }).join('');
     }
