@@ -97,9 +97,6 @@
                 <button type="button" onclick="switchTab('keys')" id="nav-keys" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <i class="fa-solid fa-key w-5"></i> Liste des Clés
                 </button>
-                <button type="button" onclick="switchTab('sites')" id="nav-sites" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
-                    <i class="fa-solid fa-map-location-dot w-5"></i> Gestion des sites
-                </button>
                 <button type="button" onclick="switchTab('loans')" id="nav-loans" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <i class="fa-solid fa-hand-holding w-5"></i> Emprunts en cours
                 </button>
@@ -111,6 +108,9 @@
                 </button>
                 <button type="button" onclick="switchTab('history')" id="nav-history" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <i class="fa-solid fa-clock-rotate-left w-5"></i> Historique des emprunts
+                </button>
+                <button type="button" onclick="switchTab('sites')" id="nav-sites" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
+                    <i class="fa-solid fa-map-location-dot w-5"></i> Gestion des sites
                 </button>
                 <button type="button" onclick="switchTab('users')" id="nav-users" class="admin-only hidden w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition text-left font-medium text-sm">
                     <div class="flex items-center gap-3">
@@ -210,52 +210,7 @@
                         <tbody id="keys-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm"></tbody>
                     </table>
                 </div>
-                <!-- Pagination de la liste des clés -->
                 <div id="keys-pagination" class="flex items-center justify-between px-2 pt-2"></div>
-            </section>
-
-            <!-- Gestion des Sites -->
-            <section id="tab-sites" class="hidden space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 class="text-2xl font-bold">Gestion des sites et stockages</h2>
-                    <button type="button" onclick="openAddSiteModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-plus"></i> Ajouter un site
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
-                        <h3 class="font-bold text-base border-b border-slate-100 dark:border-slate-700 pb-2">Liste des Sites</h3>
-                        <div id="sites-list-container" class="space-y-2"></div>
-                    </div>
-
-                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
-                        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
-                            <div>
-                                <h3 id="selected-site-title" class="font-bold text-lg text-indigo-600 dark:text-indigo-400">Sélectionnez un site</h3>
-                                <p class="text-xs text-slate-400">Configurations des boîtes (BAC / Backlock) pour ce site</p>
-                            </div>
-                            <button type="button" id="btn-add-storage" onclick="openAddStorageModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-                                <i class="fa-solid fa-plus"></i> Ajouter un stockage
-                            </button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
-                                    <tr>
-                                        <th class="p-3">Type</th>
-                                        <th class="p-3">Nombre de boîtes</th>
-                                        <th class="p-3">Capacité par boîte</th>
-                                        <th class="p-3 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="storages-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm">
-                                    <tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun site sélectionné</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <!-- Emprunts en cours -->
@@ -332,6 +287,49 @@
                 <div id="history-pagination" class="flex items-center justify-between px-2 pt-2"></div>
             </section>
 
+            <!-- Gestion des Sites (Positionné juste après l'historique) -->
+            <section id="tab-sites" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="text-2xl font-bold">Gestion des sites et stockages</h2>
+                    <button type="button" onclick="openAddSiteModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium shadow flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-plus"></i> Ajouter un site
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-3">
+                        <h3 class="font-bold text-base border-b border-slate-100 dark:border-slate-700 pb-2">Liste des Sites</h3>
+                        <div id="sites-list-container" class="space-y-2"></div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                            <div>
+                                <h3 id="selected-site-title" class="font-bold text-lg text-indigo-600 dark:text-indigo-400">Sélectionnez un site</h3>
+                                <p class="text-xs text-slate-400">Configurations des boîtes (BAC / Backlock) pour ce site</p>
+                            </div>
+                            <button type="button" id="btn-add-storage" onclick="openAddStorageModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> Ajouter un stockage
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-700 text-xs uppercase text-slate-500 dark:text-slate-400">
+                                    <tr>
+                                        <th class="p-3">Boîte unitaire</th>
+                                        <th class="p-3">Capacité</th>
+                                        <th class="p-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="storages-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                                    <tr><td colspan="3" class="p-4 text-center text-slate-400">Aucun site sélectionné</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Utilisateurs Admin -->
             <section id="tab-users" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">Validation & Gestion des Utilisateurs</h2>
@@ -370,7 +368,12 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Infos supplémentaires (optionnel)</label>
-                    <input type="text" id="key-info" placeholder="Ex: badge portail, clé trappe,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
+                    <input type="text" id="key-info" placeholder="Ex: badge portail,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
+                </div>
+                <!-- Site de rattachement placé juste au-dessus du choix du stockage -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Site de rattachement</label>
+                    <select id="key-site-select" onchange="onKeySiteChange()" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Endroit de stockage</label>
@@ -379,13 +382,13 @@
                             <option value="BAC">BAC</option>
                             <option value="Backlock">Backlock</option>
                         </select>
-                        <select id="loc-num1" required class="px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></select>
+                        <select id="loc-num1" onchange="updateLocationOptions()" required class="px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></select>
                         <select id="loc-num2" required class="px-2 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></select>
                     </div>
                 </div>
                 <div id="key-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeKeyModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
+                    <button type="button" onclick="closeKeyModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100">Annuler</button>
                     <button type="submit" id="key-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-2">
                         <span>Enregistrer</span>
                         <i id="key-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
@@ -402,7 +405,7 @@
             <form onsubmit="handleCreateSite(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Nom du site</label>
-                    <input type="text" id="new-site-name" required placeholder="Ex: Lyon Part-Dieu" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm">
+                    <input type="text" id="new-site-name" required placeholder="Ex: Lyon Part-Dieu" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
                 </div>
                 <div id="site-modal-error" class="hidden text-red-500 text-xs font-semibold"></div>
                 <div class="flex justify-end gap-2 pt-2">
@@ -413,10 +416,10 @@
         </div>
     </div>
 
-    <!-- Modal Ajout Stockage -->
+    <!-- Modal Ajout Stockage Unitaire -->
     <div id="add-storage-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700">
-            <h3 class="text-lg font-bold mb-4">Ajouter un type de stockage</h3>
+            <h3 class="text-lg font-bold mb-4">Ajouter une boîte de stockage</h3>
             <form onsubmit="handleCreateStorage(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Type de stockage</label>
@@ -426,12 +429,12 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Nombre de structures (ex: 3)</label>
-                    <input type="number" id="storage-max1" min="1" required value="3" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
+                    <label class="block text-sm font-medium mb-1">Numéro de la boîte (ex: 4)</label>
+                    <input type="number" id="storage-number-input" min="1" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Nombre d'alvéoles par structure (ex: 50)</label>
-                    <input type="number" id="storage-max2" min="1" required value="50" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
+                    <label class="block text-sm font-medium mb-1">Capacité (Nombre d'alvéoles)</label>
+                    <input type="number" id="storage-capacity-input" min="1" required value="50" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeAddStorageModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm">Annuler</button>
@@ -449,9 +452,9 @@
             </div>
             <h3 id="confirm-modal-title" class="text-lg font-bold">Confirmer la suppression</h3>
             <p id="confirm-modal-text" class="text-xs text-slate-500 dark:text-slate-400"></p>
-            <div id="confirm-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
+            <div id="confirm-modal-error" class="hidden text-red-500 text-xs font-semibold bg-red-50 p-2 rounded"></div>
             <div class="flex justify-center gap-2 pt-2">
-                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm">Annuler</button>
+                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm">Annuler</button>
                 <button type="button" id="confirm-modal-action-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium text-sm flex items-center gap-2">
                     <span>Confirmer</span>
                     <i id="confirm-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
@@ -469,15 +472,12 @@
                 <input type="hidden" id="borrow-key-id">
                 <div>
                     <label class="block text-sm font-medium mb-1">Commentaire / Remarque (optionnel)</label>
-                    <textarea id="borrow-comment-input" rows="3" placeholder="Ex: prêt pour MOE,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                    <textarea id="borrow-comment-input" rows="3" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"></textarea>
                 </div>
-                <div id="borrow-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
+                <div id="borrow-modal-error" class="hidden text-red-500 text-xs font-semibold text-center"></div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeBorrowModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
-                    <button type="submit" id="borrow-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-2">
-                        <span>Confirmer l'emprunt</span>
-                        <i id="borrow-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
-                    </button>
+                    <button type="button" onclick="closeBorrowModal()" class="px-4 py-2 border border-slate-300 rounded-lg">Annuler</button>
+                    <button type="submit" id="borrow-submit-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium">Confirmer l'emprunt</button>
                 </div>
             </form>
         </div>
@@ -491,16 +491,13 @@
             <form onsubmit="confirmReturnKey(event)" class="space-y-4">
                 <input type="hidden" id="return-key-id">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Commentaire / Remarque au retour (optionnel)</label>
-                    <textarea id="return-comment-input" rows="3" placeholder="Ex: vigik OK,..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 text-sm"></textarea>
+                    <label class="block text-sm font-medium mb-1">Commentaire au retour (optionnel)</label>
+                    <textarea id="return-comment-input" rows="3" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"></textarea>
                 </div>
-                <div id="return-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
+                <div id="return-modal-error" class="hidden text-red-500 text-xs font-semibold text-center"></div>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeReturnModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Annuler</button>
-                    <button type="submit" id="return-submit-btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium flex items-center gap-2">
-                        <span>Valider le retour</span>
-                        <i id="return-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
-                    </button>
+                    <button type="button" onclick="closeReturnModal()" class="px-4 py-2 border border-slate-300 rounded-lg">Annuler</button>
+                    <button type="submit" id="return-submit-btn" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium">Valider le retour</button>
                 </div>
             </form>
         </div>
@@ -513,26 +510,22 @@
             <form onsubmit="sendContactMessage(event)" class="space-y-4 mt-3">
                 <div>
                     <label class="block text-sm mb-1 font-medium">Sujet</label>
-                    <input type="text" id="contact-subject" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100">
+                    <input type="text" id="contact-subject" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
                 </div>
                 <div>
                     <label class="block text-sm mb-1 font-medium">Message</label>
-                    <textarea id="contact-message" rows="4" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100"></textarea>
+                    <textarea id="contact-message" rows="4" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"></textarea>
                 </div>
-                <div id="contact-success" class="hidden text-emerald-600 dark:text-emerald-400 text-xs font-semibold text-center">Message transmis !</div>
+                <div id="contact-success" class="hidden text-emerald-600 text-xs font-semibold text-center">Message transmis !</div>
                 <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeContactModal()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">Fermer</button>
-                    <button type="submit" id="contact-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center gap-2">
-                        <span>Envoyer</span>
-                        <i id="contact-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
-                    </button>
+                    <button type="button" onclick="closeContactModal()" class="px-4 py-2 border border-slate-300 rounded-lg">Fermer</button>
+                    <button type="submit" id="contact-submit-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium">Envoyer</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION SUPABASE ---
         const SUPABASE_URL = 'https://qtlgzkqopptzvcnxseck.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0bGd6a3FvcHB0enZjbnhzZWNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDQ5MjIsImV4cCI6MjEwNzQ4MDkyMn0.VvRgo57AkB1lCc2SGqKVVJPwFL0p2ofNSxKLt0r27Zc';
         
@@ -555,17 +548,12 @@
         let lastReturnMap = new Map();
         let historyPage = 1;
         const HISTORY_PAGE_SIZE = 50;
-
         let keysPage = 1;
         const KEYS_PAGE_SIZE = 20;
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         function validateKeyCodeInput(input) {
@@ -573,13 +561,11 @@
         }
 
         let currentTheme = localStorage.getItem('theme') || 'dark';
-
         function applyTheme(theme) {
             currentTheme = theme;
             localStorage.setItem('theme', theme);
             const htmlEl = document.documentElement;
             if (theme === 'dark') { htmlEl.classList.add('dark'); } else { htmlEl.classList.remove('dark'); }
-
             const iconClass = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
             ['theme-icon-auth', 'theme-icon-mobile', 'theme-icon-sidebar'].forEach(id => {
                 const icon = document.getElementById(id);
@@ -589,26 +575,33 @@
         function toggleTheme() { applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
         applyTheme(currentTheme);
 
-        function updateLocationOptions(selectedNum1 = null, selectedNum2 = null) {
+        function updateLocationOptions(targetSiteId = null, selectedNum1 = null, selectedNum2 = null) {
+            const siteSelect = document.getElementById('key-site-select');
+            const siteIdToUse = targetSiteId || (siteSelect ? siteSelect.value : null) || activeSiteId;
             const type = document.getElementById('loc-type').value;
             const num1Select = document.getElementById('loc-num1');
             const num2Select = document.getElementById('loc-num2');
+            if (!num1Select || !num2Select) return;
 
             num1Select.innerHTML = '';
             num2Select.innerHTML = '';
 
-            const maxNum1 = (type === 'BAC') ? 3 : 12;
-            const maxNum2 = (type === 'BAC') ? 50 : 12;
-
-            for (let i = 1; i <= maxNum1; i++) {
+            const activeStorages = siteStoragesList.filter(st => st.site_id === siteIdToUse && st.storage_type === type);
+            const uniqueNumbers = [...new Set(activeStorages.map(st => st.storage_number))].sort((a, b) => a - b);
+            
+            uniqueNumbers.forEach(num => {
                 const opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = i;
-                if (selectedNum1 && parseInt(selectedNum1) === i) opt.selected = true;
+                opt.value = num;
+                opt.textContent = num;
+                if (selectedNum1 && parseInt(selectedNum1) === num) opt.selected = true;
                 num1Select.appendChild(opt);
-            }
+            });
 
-            for (let i = 1; i <= maxNum2; i++) {
+            const currentBoxNum = num1Select.value ? parseInt(num1Select.value) : (uniqueNumbers[0] || 1);
+            const matchedStorage = activeStorages.find(st => st.storage_number === currentBoxNum);
+            const maxCapacity = matchedStorage ? matchedStorage.capacity : 50;
+
+            for (let i = 1; i <= maxCapacity; i++) {
                 const opt = document.createElement('option');
                 opt.value = i;
                 opt.textContent = i;
@@ -617,13 +610,16 @@
             }
         }
 
+        function onKeySiteChange() {
+            const siteId = document.getElementById('key-site-select').value;
+            updateLocationOptions(siteId);
+        }
+
         function updateLastReturnIndex() {
             lastReturnMap.clear();
             for (let h of historyList) {
                 const keyLower = h.code.toLowerCase();
-                if (!lastReturnMap.has(keyLower)) {
-                    lastReturnMap.set(keyLower, h);
-                }
+                if (!lastReturnMap.has(keyLower)) lastReturnMap.set(keyLower, h);
             }
         }
 
@@ -643,27 +639,21 @@
             const errDiv = document.getElementById('auth-error');
             const succDiv = document.getElementById('auth-success');
             const spinner = document.getElementById('auth-spinner');
-
             errDiv.classList.add('hidden');
             succDiv.classList.add('hidden');
 
             if (!supabaseClient) {
-                errDiv.innerText = "Veuillez d'abord renseigner vos clés Supabase.";
+                errDiv.innerText = "Veuillez renseigner vos clés Supabase.";
                 errDiv.classList.remove('hidden');
                 return;
             }
-
             spinner.classList.remove('hidden');
 
             try {
                 if (isRegistering) {
-                    if (ALLOWED_DOMAIN && !email.endsWith(ALLOWED_DOMAIN)) {
-                        throw new Error(`L'adresse e-mail doit se terminer par ${ALLOWED_DOMAIN}`);
-                    }
-
+                    if (ALLOWED_DOMAIN && !email.endsWith(ALLOWED_DOMAIN)) throw new Error(`L'e-mail doit se terminer par ${ALLOWED_DOMAIN}`);
                     const { data, error } = await supabaseClient.auth.signUp({ email, password });
                     if (error) throw error;
-
                     if (data.user) {
                         await supabaseClient.from('profiles').upsert([{ id: data.user.id, email: email, role: 'pending' }]);
                         succDiv.innerText = "Inscription enregistrée ! En attente de validation admin.";
@@ -672,19 +662,15 @@
                 } else {
                     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                     if (error) throw error;
-
                     const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', data.user.id).single();
                     if (profile && profile.role === 'pending') {
                         await supabaseClient.auth.signOut();
-                        throw new Error("Votre compte est toujours en attente d'approbation.");
+                        throw new Error("Votre compte est en attente d'approbation.");
                     }
-
                     checkUserSession();
                 }
             } catch (err) {
-                let errorMsg = err.message || "";
-                if (errorMsg.includes("Invalid login credentials")) errorMsg = "E-mail ou mot de passe incorrect.";
-                errDiv.innerText = errorMsg;
+                errDiv.innerText = err.message || "Erreur d'authentification.";
                 errDiv.classList.remove('hidden');
             } finally {
                 spinner.classList.add('hidden');
@@ -693,19 +679,15 @@
 
         async function checkUserSession() {
             if (!supabaseClient) return;
-
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
                 const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-                
                 if (profile && profile.role === 'pending') {
                     await supabaseClient.auth.signOut();
-                    alert("Votre compte est en attente de validation par un administrateur.");
+                    alert("Votre compte est en attente de validation.");
                     return;
                 }
-
                 currentUser = { email: session.user.email, role: profile ? profile.role : 'user' };
-
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
                 document.getElementById('user-display-email').innerText = currentUser.email;
@@ -742,10 +724,8 @@
                     activeSiteId = defaultSite.id;
                 }
             }
-
             const { data: storages } = await supabaseClient.from('site_storages').select('*');
             if (storages) siteStoragesList = storages;
-
             renderSitesManagement();
         }
 
@@ -770,22 +750,14 @@
         async function loadHistoryRealtime() {
             if (!supabaseClient) return;
             const { data } = await supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false });
-            if (data) {
-                historyList = data;
-                updateLastReturnIndex();
-            }
+            if (data) { historyList = data; updateLastReturnIndex(); }
             renderHistory();
             render(); 
 
             supabaseClient.channel('public:loan_history')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'loan_history' }, () => {
                     supabaseClient.from('loan_history').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-                        if (data) { 
-                            historyList = data; 
-                            updateLastReturnIndex();
-                            renderHistory(); 
-                            render(); 
-                        }
+                        if (data) { historyList = data; updateLastReturnIndex(); renderHistory(); render(); }
                     });
                 }).subscribe();
         }
@@ -795,13 +767,6 @@
             const { data } = await supabaseClient.from('profiles').select('*');
             if (data) profiles = data;
             renderUsers();
-
-            supabaseClient.channel('public:profiles')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-                    supabaseClient.from('profiles').select('*').then(({ data }) => {
-                        if (data) { profiles = data; renderUsers(); }
-                    });
-                }).subscribe();
         }
 
         async function loadMessagesRealtime() {
@@ -809,13 +774,6 @@
             const { data } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: false });
             if (data) messages = data;
             renderMessages();
-
-            supabaseClient.channel('public:messages')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
-                    supabaseClient.from('messages').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-                        if (data) { messages = data; renderMessages(); }
-                    });
-                }).subscribe();
         }
 
         function openBorrowModal(id) {
@@ -824,40 +782,23 @@
             document.getElementById('borrow-key-id').value = id;
             document.getElementById('borrow-key-info').innerText = `Code Site : ${k.code} (${k.location})`;
             document.getElementById('borrow-comment-input').value = '';
-            document.getElementById('borrow-modal-error').classList.add('hidden');
             document.getElementById('borrow-modal').classList.remove('hidden');
         }
-
         function closeBorrowModal() { document.getElementById('borrow-modal').classList.add('hidden'); }
 
         async function confirmBorrowKey(e) {
             e.preventDefault();
             const id = document.getElementById('borrow-key-id').value;
             const comment = document.getElementById('borrow-comment-input').value.trim();
-            const errDiv = document.getElementById('borrow-modal-error');
-            const spinner = document.getElementById('borrow-spinner');
-            errDiv.classList.add('hidden');
-
             if (!supabaseClient) return;
-            spinner.classList.remove('hidden');
-
             try {
                 const dateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
                 const { error } = await supabaseClient.from('keys').update({ 
-                    status: 'emprunte', 
-                    borrowed_by: currentUser.email, 
-                    date: dateStr,
-                    borrow_comment: comment || null
+                    status: 'emprunte', borrowed_by: currentUser.email, date: dateStr, borrow_comment: comment || null 
                 }).eq('id', id);
-
                 if (error) throw error;
                 closeBorrowModal();
-            } catch (err) {
-                errDiv.innerText = "Erreur réseau : impossible de valider l'emprunt.";
-                errDiv.classList.remove('hidden');
-            } finally {
-                spinner.classList.add('hidden');
-            }
+            } catch (err) { alert("Erreur d'emprunt"); }
         }
 
         function openReturnModal(id) {
@@ -866,94 +807,48 @@
             document.getElementById('return-key-id').value = id;
             document.getElementById('return-key-info').innerText = `Code Site : ${k.code} (${k.location})`;
             document.getElementById('return-comment-input').value = '';
-            document.getElementById('return-modal-error').classList.add('hidden');
             document.getElementById('return-modal').classList.remove('hidden');
         }
-
         function closeReturnModal() { document.getElementById('return-modal').classList.add('hidden'); }
 
         async function confirmReturnKey(e) {
             e.preventDefault();
             const id = document.getElementById('return-key-id').value;
             const returnComment = document.getElementById('return-comment-input').value.trim();
-            const errDiv = document.getElementById('return-modal-error');
-            const spinner = document.getElementById('return-spinner');
-            errDiv.classList.add('hidden');
-
             if (!supabaseClient) return;
-            spinner.classList.remove('hidden');
-
             try {
                 const key = keys.find(k => k.id === id);
                 if (key) {
                     const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-                    
-                    const { error: histError } = await supabaseClient.from('loan_history').insert([{
-                        code: key.code,
-                        location: key.location,
-                        borrowed_by: key.borrowed_by || 'Inconnu',
-                        borrowed_at: key.date || '-',
-                        borrow_comment: key.borrow_comment || null,
-                        returned_at: returnDateStr,
-                        returned_by: currentUser ? currentUser.email : 'Inconnu',
-                        return_comment: returnComment || null
+                    await supabaseClient.from('loan_history').insert([{
+                        code: key.code, location: key.location, borrowed_by: key.borrowed_by || 'Inconnu',
+                        borrowed_at: key.date || '-', borrow_comment: key.borrow_comment || null,
+                        returned_at: returnDateStr, returned_by: currentUser.email, return_comment: returnComment || null
                     }]);
-
-                    if (histError) throw histError;
-
-                    const { error: keyError } = await supabaseClient.from('keys').update({ 
-                        status: 'disponible', 
-                        borrowed_by: null, 
-                        date: null,
-                        borrow_comment: null
+                    await supabaseClient.from('keys').update({ 
+                        status: 'disponible', borrowed_by: null, date: null, borrow_comment: null 
                     }).eq('id', id);
-
-                    if (keyError) throw keyError;
                 }
                 closeReturnModal();
-            } catch (err) {
-                errDiv.innerText = "Erreur réseau : impossible de valider le retour.";
-                errDiv.classList.add('hidden');
-            } finally {
-                spinner.classList.add('hidden');
-            }
+            } catch (err) { alert("Erreur de retour"); }
         }
 
         async function sendContactMessage(e) {
             e.preventDefault();
             const subject = document.getElementById('contact-subject').value.trim();
             const message = document.getElementById('contact-message').value.trim();
-            const succDiv = document.getElementById('contact-success');
-            const spinner = document.getElementById('contact-spinner');
-
             if (!supabaseClient || !currentUser) return;
-            spinner.classList.remove('hidden');
-
             try {
-                const { error } = await supabaseClient.from('messages').insert([{
-                    sender_email: currentUser.email,
-                    subject: subject,
-                    message: message
-                }]);
-
-                if (error) throw error;
-
-                succDiv.innerText = "Message transmis !";
-                succDiv.classList.remove('hidden');
-                document.getElementById('contact-subject').value = '';
-                document.getElementById('contact-message').value = '';
-
+                await supabaseClient.from('messages').insert([{ sender_email: currentUser.email, subject, message }]);
+                document.getElementById('contact-success').classList.remove('hidden');
                 setTimeout(() => closeContactModal(), 1500);
-            } catch (err) {
-                alert("Erreur : " + err.message);
-            } finally {
-                spinner.classList.add('hidden');
-            }
+            } catch (err) { alert("Erreur d'envoi"); }
         }
 
         async function updateUserRole(userId, newRole) {
             if (!supabaseClient || currentUser?.role !== 'admin') return;
             await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
+            loadProfilesRealtime();
         }
 
         async function saveKey(e) {
@@ -961,13 +856,12 @@
             const id = document.getElementById('key-id').value;
             const code = document.getElementById('key-code').value.trim();
             const info = document.getElementById('key-info').value.trim();
-            
+            const siteId = document.getElementById('key-site-select').value;
             const errDiv = document.getElementById('key-modal-error');
-            const spinner = document.getElementById('key-spinner');
             errDiv.classList.add('hidden');
 
             if (!/^[0-9_]+$/.test(code)) {
-                errDiv.innerText = "Erreur : Le code site ne doit contenir que des chiffres et le caractère _";
+                errDiv.innerText = "Le code site ne doit contenir que des chiffres et _";
                 errDiv.classList.remove('hidden');
                 return;
             }
@@ -977,48 +871,24 @@
             const num2 = document.getElementById('loc-num2').value;
             const location = `${type} ${num1} / ${num2}`;
 
-            const duplicateCode = keys.find(k => k.code.toLowerCase() === code.toLowerCase() && k.id !== id);
-            if (duplicateCode) {
-                errDiv.innerText = `Erreur : Le code site "${code}" existe déjà.`;
-                errDiv.classList.remove('hidden');
-                return;
-            }
-
-            const duplicateLocation = keys.find(k => k.location === location && k.id !== id);
-            if (duplicateLocation) {
-                errDiv.innerText = `Erreur : L'emplacement "${location}" est déjà attribué.`;
-                errDiv.classList.remove('hidden');
-                return;
-            }
-
-            if (!supabaseClient) return;
-            spinner.classList.remove('hidden');
-
             try {
-                const defaultSite = sitesList.find(s => s.name === 'CLR') || sitesList[0];
-                const keyData = { code, location, site_id: defaultSite ? defaultSite.id : null };
+                const keyData = { code, location, site_id: siteId };
                 if (info) keyData.info = info;
 
                 if (id) {
                     await supabaseClient.from('keys').update(keyData).eq('id', id);
                 } else {
                     keyData.status = 'disponible';
-                    keyData.borrowed_by = null;
-                    keyData.date = null;
-                    keyData.borrow_comment = null;
                     await supabaseClient.from('keys').insert([keyData]);
                 }
                 closeKeyModal();
             } catch (err) {
                 errDiv.innerText = "Erreur lors de l'enregistrement.";
                 errDiv.classList.remove('hidden');
-            } finally {
-                spinner.classList.add('hidden');
             }
         }
 
         let currentConfirmCallback = null;
-
         function showConfirmModal(title, text, callback) {
             document.getElementById('confirm-modal-title').innerText = title;
             document.getElementById('confirm-modal-text').innerText = text;
@@ -1026,93 +896,58 @@
             currentConfirmCallback = callback;
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
+        function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); currentConfirmCallback = null; }
 
-        function closeConfirmModal() {
-            document.getElementById('confirm-modal').classList.add('hidden');
-            currentConfirmCallback = null;
-        }
-
-        async function executeConfirmAction() {
-            if (!currentConfirmCallback) return;
-            const spinner = document.getElementById('confirm-spinner');
-            const errDiv = document.getElementById('confirm-modal-error');
-            spinner.classList.remove('hidden');
-            errDiv.classList.add('hidden');
-
-            try {
-                await currentConfirmCallback();
-                closeConfirmModal();
-            } catch (err) {
-                errDiv.innerText = "Erreur lors de l'exécution.";
-                errDiv.classList.remove('hidden');
-            } finally {
-                spinner.classList.add('hidden');
+        document.getElementById('confirm-modal-action-btn').addEventListener('click', async () => {
+            if (currentConfirmCallback) {
+                try { await currentConfirmCallback(); closeConfirmModal(); } catch (err) { alert("Erreur d'action"); }
             }
-        }
-
-        document.getElementById('confirm-modal-action-btn').addEventListener('click', executeConfirmAction);
+        });
 
         function deleteKey(id) {
-            if (!currentUser) return;
-            const k = keys.find(x => x.id === id);
-            if (!k) return;
-
-            showConfirmModal(
-                "Confirmer la suppression",
-                `Voulez-vous vraiment supprimer la clé "${k.code}" (${k.location}) ?`,
-                async () => {
-                    const { error } = await supabaseClient.from('keys').delete().eq('id', id);
-                    if (error) throw error;
-                }
-            );
+            showConfirmModal("Supprimer la clé", "Voulez-vous vraiment supprimer cette clé ?", async () => {
+                await supabaseClient.from('keys').delete().eq('id', id);
+            });
         }
 
         function deleteMessage(id) {
             if (currentUser?.role !== 'admin') return;
-            showConfirmModal("Supprimer le message", "Voulez-vous vraiment supprimer ce message ?", async () => {
-                const { error } = await supabaseClient.from('messages').delete().eq('id', id);
-                if (error) throw error;
+            showConfirmModal("Supprimer le message", "Voulez-vous supprimer ce message ?", async () => {
+                await supabaseClient.from('messages').delete().eq('id', id);
+                loadMessagesRealtime();
             });
         }
 
         function deleteUserProfile(userId) {
             if (currentUser?.role !== 'admin') return;
-            const p = profiles.find(x => x.id === userId);
-            showConfirmModal("Rejeter l'utilisateur", `Supprimer le compte de ${p ? p.email : 'cet utilisateur'} ?`, async () => {
-                const { error } = await supabaseClient.from('profiles').delete().eq('id', userId);
-                if (error) throw error;
+            showConfirmModal("Rejeter l'utilisateur", "Supprimer ce compte ?", async () => {
+                await supabaseClient.from('profiles').delete().eq('id', userId);
+                loadProfilesRealtime();
             });
         }
 
         function toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            sidebar.classList.toggle('-translate-x-full');
-            backdrop.classList.toggle('hidden');
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebar-backdrop').classList.toggle('hidden');
         }
 
         function switchTab(tab) {
-            ['dashboard', 'keys', 'loans', 'my-loans', 'history', 'users', 'messages', 'sites'].forEach(t => {
+            ['dashboard', 'keys', 'loans', 'my-loans', 'history', 'sites', 'users', 'messages'].forEach(t => {
                 const section = document.getElementById(`tab-${t}`);
                 const navBtn = document.getElementById(`nav-${t}`);
                 if (section) section.classList.add('hidden');
                 if (navBtn) navBtn.classList.remove('bg-indigo-600', 'text-white');
             });
-
-            const activeSection = document.getElementById(`tab-${tab}`);
-            const activeNavBtn = document.getElementById(`nav-${tab}`);
-            if (activeSection) activeSection.classList.remove('hidden');
-            if (activeNavBtn) activeNavBtn.classList.add('bg-indigo-600', 'text-white');
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tab}`);
+            if (activeNav) activeNav.classList.add('bg-indigo-600', 'text-white');
 
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
                 document.getElementById('sidebar-backdrop').classList.add('hidden');
             }
-            
             render();
             if (tab === 'history') renderHistory();
-            if (tab === 'users') renderUsers();
-            if (tab === 'messages') renderMessages();
             if (tab === 'sites') loadSitesAndStorages();
         }
 
@@ -1120,37 +955,41 @@
             document.getElementById('key-id').value = id || '';
             document.getElementById('key-modal-error').classList.add('hidden');
 
+            const siteSelect = document.getElementById('key-site-select');
+            siteSelect.innerHTML = sitesList.map(s => `<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('');
+
+            const clrSite = sitesList.find(s => s.name === 'CLR');
+            const defaultSiteId = clrSite ? clrSite.id : (sitesList[0] ? sitesList[0].id : null);
+
             if (id) {
                 const k = keys.find(x => x.id === id);
                 if (k) {
                     document.getElementById('key-code').value = k.code;
                     document.getElementById('key-info').value = k.info || '';
+                    if (k.site_id) siteSelect.value = k.site_id;
+                    
                     const parts = k.location ? k.location.split(' ') : ['BAC', '1', '/', '1'];
                     document.getElementById('loc-type').value = parts[0];
-                    updateLocationOptions(parts[1], parts[3]);
+                    updateLocationOptions(siteSelect.value, parts[1], parts[3]);
                     document.getElementById('modal-title').innerText = "Modifier la clé";
                 }
             } else {
                 document.getElementById('key-code').value = '';
                 document.getElementById('key-info').value = '';
+                
+                if (defaultSiteId) siteSelect.value = defaultSiteId;
+
                 document.getElementById('loc-type').value = 'BAC';
-                updateLocationOptions();
+                updateLocationOptions(siteSelect.value);
                 document.getElementById('modal-title').innerText = "Ajouter une clé";
             }
             document.getElementById('key-modal').classList.remove('hidden');
         }
-
         function closeKeyModal() { document.getElementById('key-modal').classList.add('hidden'); }
-        function openContactModal() { 
-            if (window.innerWidth < 768) {
-                document.getElementById('sidebar').classList.add('-translate-x-full');
-                document.getElementById('sidebar-backdrop').classList.add('hidden');
-            }
-            document.getElementById('contact-modal').classList.remove('hidden'); 
-        }
+        function openContactModal() { document.getElementById('contact-modal').classList.remove('hidden'); }
         function closeContactModal() { document.getElementById('contact-modal').classList.add('hidden'); }
 
-        // --- GESTION DES SITES ---
+        // --- GESTION DES SITES & STOCKAGES UNITAIRES ---
         function renderSitesManagement() {
             const listContainer = document.getElementById('sites-list-container');
             if (!listContainer) return;
@@ -1161,7 +1000,7 @@
             }
 
             listContainer.innerHTML = sitesList.map(s => `
-                <div onclick="selectManageSite('${s.id}')" class="p-3 rounded-lg cursor-pointer transition border ${activeSiteId === s.id ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400 font-semibold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'} flex justify-between items-center">
+                <div onclick="selectManageSite('${s.id}')" class="p-3 rounded-lg cursor-pointer transition border ${activeSiteId === s.id ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400 font-semibold' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50'} flex justify-between items-center">
                     <span>${escapeHtml(s.name)}</span>
                     ${s.name !== 'CLR' ? `<button type="button" onclick="event.stopPropagation(); deleteSite('${s.id}')" class="text-slate-400 hover:text-red-500 text-xs p-1"><i class="fa-solid fa-trash"></i></button>` : ''}
                 </div>
@@ -1178,15 +1017,14 @@
 
                 const siteStorages = siteStoragesList.filter(st => st.site_id === activeSiteId);
                 if (siteStorages.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucun stockage configuré.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Aucun stockage configuré.</td></tr>`;
                 } else {
                     tbody.innerHTML = siteStorages.map(st => `
                         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-3 font-semibold">${escapeHtml(st.storage_type)}</td>
-                            <td class="p-3 text-slate-600 dark:text-slate-300">1 à ${st.max_num1}</td>
-                            <td class="p-3 text-slate-600 dark:text-slate-300">${st.max_num2} alvéoles</td>
+                            <td class="p-3 font-semibold">${escapeHtml(st.storage_type)} ${st.storage_number}</td>
+                            <td class="p-3 text-slate-600 dark:text-slate-300">${st.capacity} alvéoles</td>
                             <td class="p-3 text-right">
-                                <button type="button" onclick="deleteStorage('${st.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                                <button type="button" onclick="deleteSpecificStorage('${st.id}', '${st.storage_type} ${st.storage_number}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `).join('');
@@ -1194,32 +1032,19 @@
             }
         }
 
-        function selectManageSite(siteId) {
-            activeSiteId = siteId;
-            renderSitesManagement();
-        }
-
-        function openAddSiteModal() {
-            document.getElementById('new-site-name').value = '';
-            document.getElementById('site-modal-error').classList.add('hidden');
-            document.getElementById('add-site-modal').classList.remove('hidden');
-        }
+        function selectManageSite(siteId) { activeSiteId = siteId; renderSitesManagement(); }
+        function openAddSiteModal() { document.getElementById('add-site-modal').classList.remove('hidden'); }
         function closeAddSiteModal() { document.getElementById('add-site-modal').classList.add('hidden'); }
 
         async function handleCreateSite(e) {
             e.preventDefault();
             const name = document.getElementById('new-site-name').value.trim();
             if (!name) return;
-
             const { data, error } = await supabaseClient.from('sites').insert([{ name }]).select().single();
-            if (error) {
-                document.getElementById('site-modal-error').innerText = "Erreur : Ce nom de site existe probablement déjà.";
-                document.getElementById('site-modal-error').classList.remove('hidden');
-                return;
-            }
+            if (error) { alert("Erreur : Ce site existe déjà."); return; }
             if (data) {
                 activeSiteId = data.id;
-                await supabaseClient.from('site_storages').insert([{ site_id: data.id, storage_type: 'BAC', max_num1: 3, max_num2: 50 }]);
+                await supabaseClient.from('site_storages').insert([{ site_id: data.id, storage_type: 'BAC', storage_number: 1, capacity: 50 }]);
             }
             closeAddSiteModal();
             loadSitesAndStorages();
@@ -1227,70 +1052,51 @@
 
         async function deleteSite(siteId) {
             const site = sitesList.find(s => s.id === siteId);
-            if (!site) return;
-            
             const keysOnSite = keys.filter(k => k.site_id === siteId);
             if (keysOnSite.length > 0) {
-                alert(`Impossible de supprimer "${site.name}" : ${keysOnSite.length} clé(s) y sont rattachées.`);
+                alert(`Impossible de supprimer "${site.name}" car ${keysOnSite.length} clé(s) y sont rattachées.`);
                 return;
             }
-
-            showConfirmModal("Supprimer le site", `Voulez-vous supprimer le site "${site.name}" ?`, async () => {
+            showConfirmModal("Supprimer le site", `Supprimer le site "${site.name}" ?`, async () => {
                 await supabaseClient.from('sites').delete().eq('id', siteId);
                 loadSitesAndStorages();
             });
         }
 
-        function openAddStorageModal() { document.getElementById('add-storage-modal').classList.remove('hidden'); }
+        function openAddStorageModal() {
+            document.getElementById('storage-number-input').value = '1';
+            document.getElementById('storage-capacity-input').value = '50';
+            document.getElementById('add-storage-modal').classList.remove('hidden');
+        }
         function closeAddStorageModal() { document.getElementById('add-storage-modal').classList.add('hidden'); }
 
         async function handleCreateStorage(e) {
             e.preventDefault();
             if (!activeSiteId) return;
-
             const storage_type = document.getElementById('storage-type-input').value;
-            const max_num1 = parseInt(document.getElementById('storage-max1').value);
-            const max_num2 = parseInt(document.getElementById('storage-max2').value);
+            const storage_number = parseInt(document.getElementById('storage-number-input').value);
+            const capacity = parseInt(document.getElementById('storage-capacity-input').value);
 
             const { error } = await supabaseClient.from('site_storages').insert([{
-                site_id: activeSiteId,
-                storage_type,
-                max_num1,
-                max_num2
+                site_id: activeSiteId, storage_type, storage_number, capacity
             }]);
-
-            if (error) {
-                alert("Erreur lors de l'ajout du stockage.");
-                return;
-            }
+            if (error) { alert("Erreur : Ce numéro de boîte existe probablement déjà."); return; }
             closeAddStorageModal();
             loadSitesAndStorages();
         }
 
-        async function deleteStorage(storageId) {
-            showConfirmModal("Supprimer ce stockage", "Voulez-vous vraiment supprimer cette configuration ?", async () => {
-                await supabaseClient.from('site_storages').delete().eq('id', storageId);
+        function deleteSpecificStorage(storageId, storageName) {
+            showConfirmModal("Supprimer ce stockage", `Voulez-vous supprimer "${storageName}" ?`, async () => {
+                const { error } = await supabaseClient.from('site_storages').delete().eq('id', storageId);
+                if (error) throw error;
                 loadSitesAndStorages();
             });
         }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeKeyModal();
-                closeConfirmModal();
-                closeBorrowModal();
-                closeReturnModal();
-                closeContactModal();
-                closeAddSiteModal();
-                closeAddStorageModal();
-            }
-        });
 
         function renderMessages() {
             if (currentUser?.role !== 'admin') return;
             const badge = document.getElementById('messages-badge');
             const statMessages = document.getElementById('stat-messages');
-            
             if (messages.length > 0) {
                 if (badge) { badge.innerText = messages.length; badge.classList.remove('hidden'); }
                 if (statMessages) statMessages.innerText = messages.length;
@@ -1298,29 +1104,20 @@
                 if (badge) badge.classList.add('hidden');
                 if (statMessages) statMessages.innerText = '0';
             }
-
             const listEl = document.getElementById('messages-list');
             if (!listEl) return;
-
             if (messages.length === 0) {
-                listEl.innerHTML = `<div class="p-6 bg-white dark:bg-slate-800 rounded-xl text-center text-slate-400 border border-slate-200 dark:border-slate-700">Aucun message reçu.</div>`;
+                listEl.innerHTML = `<div class="p-6 bg-white dark:bg-slate-800 rounded-xl text-center text-slate-400">Aucun message reçu.</div>`;
             } else {
-                listEl.innerHTML = messages.map(m => {
-                    const dateFormatted = new Date(m.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-                    return `
+                listEl.innerHTML = messages.map(m => `
                     <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/60 pb-3">
-                            <div>
-                                <h3 class="font-bold text-indigo-600 dark:text-indigo-400">${escapeHtml(m.subject)}</h3>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">De : <span class="font-medium text-slate-700 dark:text-slate-300">${escapeHtml(m.sender_email)}</span> — ${dateFormatted}</p>
-                            </div>
-                            <button type="button" onclick="deleteMessage('${m.id}')" class="self-start sm:self-center text-slate-400 hover:text-red-500 text-xs px-2.5 py-1.5 rounded border border-slate-200 dark:border-slate-700 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-trash"></i> Supprimer
-                            </button>
+                        <div class="flex justify-between items-center border-b pb-3">
+                            <div><h3 class="font-bold text-indigo-600">${escapeHtml(m.subject)}</h3><p class="text-xs text-slate-400">${escapeHtml(m.sender_email)}</p></div>
+                            <button type="button" onclick="deleteMessage('${m.id}')" class="text-slate-400 hover:text-red-500 text-xs px-2.5 py-1.5 rounded border"><i class="fa-solid fa-trash"></i></button>
                         </div>
-                        <div class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">${escapeHtml(m.message)}</div>
+                        <div class="text-sm">${escapeHtml(m.message)}</div>
                     </div>
-                `}).join('');
+                `).join('');
             }
         }
 
@@ -1329,7 +1126,6 @@
             const pendingCount = profiles.filter(p => p.role === 'pending').length;
             const badge = document.getElementById('pending-badge');
             const statPending = document.getElementById('stat-pending');
-
             if (pendingCount > 0) {
                 if (badge) { badge.innerText = pendingCount; badge.classList.remove('hidden'); }
                 if (statPending) statPending.innerText = pendingCount;
@@ -1337,246 +1133,123 @@
                 if (badge) badge.classList.add('hidden');
                 if (statPending) statPending.innerText = '0';
             }
-
             const body = document.getElementById('users-table-body');
             if (!body) return;
-            if (profiles.length === 0) {
-                body.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Aucun utilisateur</td></tr>`;
-            } else {
-                body.innerHTML = profiles.map(p => `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                        <td class="p-4 font-semibold">${escapeHtml(p.email)}</td>
-                        <td class="p-4">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                p.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400' :
-                                p.role === 'user' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' :
-                                'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-                            }">
-                                ${p.role === 'pending' ? 'En attente' : p.role.toUpperCase()}
-                            </span>
-                        </td>
-                        <td class="p-4 text-right space-x-2">
-                            ${p.role === 'pending' ? `<button type="button" onclick="updateUserRole('${p.id}', 'user')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold">Valider</button>` : ''}
-                            ${p.role === 'user' ? `<button type="button" onclick="updateUserRole('${p.id}', 'admin')" class="bg-purple-600 hover:bg-purple-500 text-white px-2.5 py-1 rounded text-xs font-semibold">Admin</button>` : ''}
-                            ${p.role === 'admin' && p.email !== currentUser.email ? `<button type="button" onclick="updateUserRole('${p.id}', 'user')" class="bg-slate-600 hover:bg-slate-500 text-white px-2.5 py-1 rounded text-xs font-semibold">User</button>` : ''}
-                            ${p.email !== currentUser.email ? `<button type="button" onclick="deleteUserProfile('${p.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
-                        </td>
-                    </tr>
-                `).join('');
-            }
+            body.innerHTML = profiles.map(p => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                    <td class="p-4 font-semibold">${escapeHtml(p.email)}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${p.role === 'admin' ? 'bg-purple-100 text-purple-700' : p.role === 'user' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${p.role}</span></td>
+                    <td class="p-4 text-right space-x-2">
+                        ${p.role === 'pending' ? `<button onclick="updateUserRole('${p.id}', 'user')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Valider</button>` : ''}
+                        ${p.role === 'user' ? `<button onclick="updateUserRole('${p.id}', 'admin')" class="bg-purple-600 text-white px-2.5 py-1 rounded text-xs">Admin</button>` : ''}
+                        ${p.email !== currentUser.email ? `<button onclick="deleteUserProfile('${p.id}')" class="text-slate-400 hover:text-red-500 p-1"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
         }
 
         function renderHistory() {
-            const searchHistoryInput = document.getElementById('search-history');
-            const query = (searchHistoryInput ? searchHistoryInput.value : '').toLowerCase().trim();
-
+            const query = (document.getElementById('search-history')?.value || '').toLowerCase().trim();
             const filteredHistory = historyList.filter(h => 
                 (h.code && h.code.toLowerCase().includes(query)) ||
                 (h.location && h.location.toLowerCase().includes(query)) ||
-                (h.borrowed_by && h.borrowed_by.toLowerCase().includes(query)) ||
-                (h.returned_by && h.returned_by.toLowerCase().includes(query)) ||
-                (h.borrow_comment && h.borrow_comment.toLowerCase().includes(query)) ||
-                (h.return_comment && h.return_comment.toLowerCase().includes(query))
+                (h.borrowed_by && h.borrowed_by.toLowerCase().includes(query))
             );
-
             const totalPages = Math.ceil(filteredHistory.length / HISTORY_PAGE_SIZE) || 1;
             if (historyPage > totalPages) historyPage = totalPages;
-            if (historyPage < 1) historyPage = 1;
-
             const startIndex = (historyPage - 1) * HISTORY_PAGE_SIZE;
             const paginatedItems = filteredHistory.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
 
             const body = document.getElementById('history-table-body');
-            const paginationEl = document.getElementById('history-pagination');
             if (!body) return;
-
-            if (paginatedItems.length === 0) {
-                body.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique trouvé</td></tr>`;
-                if (paginationEl) paginationEl.innerHTML = '';
-            } else {
-                body.innerHTML = paginatedItems.map(h => `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                        <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
-                        <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.location)}</td>
-                        <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.borrowed_by)}</td>
-                        <td class="p-4 text-slate-400 text-xs">${escapeHtml(h.borrowed_at)}</td>
-                        <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(h.borrow_comment || '-')}</td>
-                        <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(h.returned_by || '-')}</td>
-                        <td class="p-4 text-slate-400 text-xs">${escapeHtml(h.returned_at)}</td>
-                        <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(h.return_comment || '-')}</td>
-                    </tr>
-                `).join('');
-
-                if (paginationEl) {
-                    paginationEl.innerHTML = `
-                        <span class="text-xs text-slate-500 dark:text-slate-400">
-                            Affichage ${startIndex + 1} à ${Math.min(startIndex + HISTORY_PAGE_SIZE, filteredHistory.length)} sur ${filteredHistory.length}
-                        </span>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="changeHistoryPage(-1)" ${historyPage === 1 ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Précédent</button>
-                            <span class="text-xs font-semibold px-2">Page ${historyPage} / ${totalPages}</span>
-                            <button type="button" onclick="changeHistoryPage(1)" ${historyPage === totalPages ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Suivant</button>
-                        </div>
-                    `;
-                }
-            }
+            body.innerHTML = paginatedItems.length === 0 ? `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique</td></tr>` : paginatedItems.map(h => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                    <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
+                    <td class="p-4">${escapeHtml(h.location)}</td>
+                    <td class="p-4">${escapeHtml(h.borrowed_by)}</td>
+                    <td class="p-4 text-xs">${escapeHtml(h.borrowed_at)}</td>
+                    <td class="p-4 text-xs italic">${escapeHtml(h.borrow_comment || '-')}</td>
+                    <td class="p-4">${escapeHtml(h.returned_by || '-')}</td>
+                    <td class="p-4 text-xs">${escapeHtml(h.returned_at)}</td>
+                    <td class="p-4 text-xs italic">${escapeHtml(h.return_comment || '-')}</td>
+                </tr>
+            `).join('');
         }
-
-        function changeHistoryPage(direction) { historyPage += direction; renderHistory(); }
-        function changeKeysPage(direction) { keysPage += direction; render(); }
 
         function render() {
-            const statTotal = document.getElementById('stat-total');
-            const statAvailable = document.getElementById('stat-available');
-            const statBorrowed = document.getElementById('stat-borrowed');
+            document.getElementById('stat-total').innerText = keys.length;
+            document.getElementById('stat-available').innerText = keys.filter(k => k.status === 'disponible').length;
+            document.getElementById('stat-borrowed').innerText = keys.filter(k => k.status === 'emprunte').length;
 
-            if (statTotal) statTotal.innerText = keys.length;
-            if (statAvailable) statAvailable.innerText = keys.filter(k => k.status === 'disponible').length;
-            if (statBorrowed) statBorrowed.innerText = keys.filter(k => k.status === 'emprunte').length;
-
-            if (currentUser?.role === 'admin') {
-                renderUsers();
-                renderMessages();
-            }
-
-            keys.sort((a, b) => {
-                const locA = a.location || '';
-                const locB = b.location || '';
-                return locA.localeCompare(locB, 'fr', { numeric: true, sensitivity: 'base' });
-            });
+            keys.sort((a, b) => (a.location || '').localeCompare((b.location || ''), 'fr', { numeric: true, sensitivity: 'base' }));
 
             const myLoans = keys.filter(k => k.status === 'emprunte' && k.borrowed_by === currentUser?.email);
-            const myLoansBadge = document.getElementById('my-loans-badge');
-            if (myLoans.length > 0) {
-                myLoansBadge.innerText = myLoans.length;
-                myLoansBadge.classList.remove('hidden');
-            } else {
-                myLoansBadge.classList.add('hidden');
-            }
+            const badge = document.getElementById('my-loans-badge');
+            if (myLoans.length > 0) { badge.innerText = myLoans.length; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
 
-            const searchKeysInput = document.getElementById('search-keys');
-            const searchKeysQuery = (searchKeysInput ? searchKeysInput.value : '').toLowerCase().trim();
-            const filteredKeys = keys.filter(k => 
-                (k.code && k.code.toLowerCase().includes(searchKeysQuery)) ||
-                (k.location && k.location.toLowerCase().includes(searchKeysQuery))
-            );
+            const query = (document.getElementById('search-keys')?.value || '').toLowerCase().trim();
+            const filteredKeys = keys.filter(k => (k.code && k.code.toLowerCase().includes(query)) || (k.location && k.location.toLowerCase().includes(query)));
 
-            const totalKeysPages = Math.ceil(filteredKeys.length / KEYS_PAGE_SIZE) || 1;
-            if (keysPage > totalKeysPages) keysPage = totalKeysPages;
-            if (keysPage < 1) keysPage = 1;
-
-            const startKeysIndex = (keysPage - 1) * KEYS_PAGE_SIZE;
-            const paginatedKeys = filteredKeys.slice(startKeysIndex, startKeysIndex + KEYS_PAGE_SIZE);
+            const totalPages = Math.ceil(filteredKeys.length / KEYS_PAGE_SIZE) || 1;
+            if (keysPage > totalPages) keysPage = totalPages;
+            const startIndex = (keysPage - 1) * KEYS_PAGE_SIZE;
+            const paginatedKeys = filteredKeys.slice(startIndex, startIndex + KEYS_PAGE_SIZE);
 
             const tableBody = document.getElementById('keys-table-body');
-            const keysPaginationEl = document.getElementById('keys-pagination');
             if (tableBody) {
-                if (paginatedKeys.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>`;
-                    if (keysPaginationEl) keysPaginationEl.innerHTML = '';
-                } else {
-                    tableBody.innerHTML = paginatedKeys.map(k => {
-                        const lastHistoryEntry = lastReturnMap.get(k.code.toLowerCase());
-                        let displayReturnInfo = '<span class="text-slate-300 dark:text-slate-600 not-italic">-</span>';
-                        if (lastHistoryEntry && lastHistoryEntry.return_comment) {
-                            displayReturnInfo = `<span class="text-xs text-slate-600 dark:text-slate-300 font-medium">${escapeHtml(lastHistoryEntry.returned_at)}</span> : <span class="italic text-slate-500 dark:text-slate-400">"${escapeHtml(lastHistoryEntry.return_comment)}"</span>`;
-                        }
-
-                        return `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-3 sm:p-4">
-                                <div class="font-semibold">${escapeHtml(k.code)}</div>
-                                ${k.info ? `<div class="text-xs text-slate-400 mt-0.5">${escapeHtml(k.info)}</div>` : ''}
-                            </td>
-                            <td class="p-3 sm:p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.location)}</td>
-                            <td class="p-3 sm:p-4">
-                                <div class="space-y-1.5">
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'}">
-                                        ${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}
-                                    </span>
-                                    <div>
-                                        ${k.status === 'disponible' 
-                                            ? `<button type="button" onclick="openBorrowModal('${k.id}')" class="bg-indigo-50 dark:bg-indigo-600/20 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-300 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>`
-                                            : currentUser 
-                                                ? `<button type="button" onclick="openReturnModal('${k.id}')" class="bg-amber-50 dark:bg-amber-600/20 hover:bg-amber-100 text-amber-600 dark:text-amber-300 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>`
-                                                : ``
-                                        }
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-3 sm:p-4 max-w-sm hidden sm:table-cell">${displayReturnInfo}</td>
-                            <td class="p-3 sm:p-4 text-right space-x-1">
-                                <button type="button" onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 p-1.5" title="Modifier"><i class="fa-solid fa-pen"></i></button>
-                                ${currentUser ? `<button type="button" onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1.5" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
-                            </td>
-                        </tr>
-                    `}).join('');
-
-                    if (keysPaginationEl) {
-                        keysPaginationEl.innerHTML = `
-                            <span class="text-xs text-slate-500 dark:text-slate-400">
-                                Affichage ${startKeysIndex + 1} à ${Math.min(startKeysIndex + KEYS_PAGE_SIZE, filteredKeys.length)} sur ${filteredKeys.length}
-                            </span>
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="changeKeysPage(-1)" ${keysPage === 1 ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Précédent</button>
-                                <span class="text-xs font-semibold px-2">Page ${keysPage} / ${totalKeysPages}</span>
-                                <button type="button" onclick="changeKeysPage(1)" ${keysPage === totalKeysPages ? 'disabled class="opacity-40 cursor-not-allowed px-3 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"' : 'class="px-3 py-1 text-xs border rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-medium"'}>Suivant</button>
-                            </div>
-                        `;
+                tableBody.innerHTML = paginatedKeys.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>` : paginatedKeys.map(k => {
+                    const lastHistory = lastReturnMap.get(k.code.toLowerCase());
+                    let returnInfo = '-';
+                    if (lastHistory && lastHistory.return_comment) {
+                        returnInfo = `<span class="font-medium">${escapeHtml(lastHistory.returned_at)}</span> : <span class="italic">"${escapeHtml(lastHistory.return_comment)}"</span>`;
                     }
-                }
-            }
-
-            const searchLoansInput = document.getElementById('search-loans');
-            const searchLoansQuery = (searchLoansInput ? searchLoansInput.value : '').toLowerCase().trim();
-            const borrowed = keys.filter(k => k.status === 'emprunte' && (
-                (k.code && k.code.toLowerCase().includes(searchLoansQuery)) ||
-                (k.borrowed_by && k.borrowed_by.toLowerCase().includes(searchLoansQuery)) ||
-                (k.borrow_comment && k.borrow_comment.toLowerCase().includes(searchLoansQuery))
-            ));
-
-            const loansTableBody = document.getElementById('loans-table-body');
-            if (loansTableBody) {
-                if (borrowed.length === 0) {
-                    loansTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt en cours</td></tr>`;
-                } else {
-                    loansTableBody.innerHTML = borrowed.map(k => `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
-                            <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.borrowed_by || 'Inconnu')}</td>
-                            <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
-                            <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(k.borrow_comment || '-')}</td>
-                            <td class="p-4 text-right">
-                                <button type="button" onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>
+                    return `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                            <td class="p-3 sm:p-4"><div class="font-semibold">${escapeHtml(k.code)}</div>${k.info ? `<div class="text-xs text-slate-400">${escapeHtml(k.info)}</div>` : ''}</td>
+                            <td class="p-3 sm:p-4">${escapeHtml(k.location)}</td>
+                            <td class="p-3 sm:p-4">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}</span>
+                                <div class="mt-1">${k.status === 'disponible' ? `<button onclick="openBorrowModal('${k.id}')" class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded text-xs font-semibold">Emprunter</button>` : currentUser ? `<button onclick="openReturnModal('${k.id}')" class="bg-amber-50 text-amber-600 px-3 py-1 rounded text-xs font-semibold">Rendre</button>` : ''}</div>
+                            </td>
+                            <td class="p-3 sm:p-4 hidden sm:table-cell text-xs">${returnInfo}</td>
+                            <td class="p-3 sm:p-4 text-right space-x-1">
+                                <button onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 p-1.5" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+                                ${currentUser ? `<button onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1.5" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
                             </td>
                         </tr>
-                    `).join('');
-                }
+                    `;
+                }).join('');
             }
 
-            const myLoansTableBody = document.getElementById('my-loans-table-body');
-            if (myLoansTableBody) {
-                if (myLoans.length === 0) {
-                    myLoansTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Vous n'avez emprunté aucune clé.</td></tr>`;
-                } else {
-                    myLoansTableBody.innerHTML = myLoans.map(k => `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                            <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
-                            <td class="p-4 text-slate-600 dark:text-slate-300">${escapeHtml(k.location)}</td>
-                            <td class="p-4 text-slate-400 text-xs">${escapeHtml(k.date || '-')}</td>
-                            <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400 max-w-xs truncate">${escapeHtml(k.borrow_comment || '-')}</td>
-                            <td class="p-4 text-right">
-                                <button type="button" onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold transition">Rendre cette clé</button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
+            const loansBody = document.getElementById('loans-table-body');
+            if (loansBody) {
+                const borrowed = keys.filter(k => k.status === 'emprunte');
+                loansBody.innerHTML = borrowed.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt</td></tr>` : borrowed.map(k => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                        <td class="p-4">${escapeHtml(k.borrowed_by)}</td>
+                        <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
+                        <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
+                        <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
+                    </tr>
+                `).join('');
+            }
+
+            const myLoansBody = document.getElementById('my-loans-table-body');
+            if (myLoansBody) {
+                myLoansBody.innerHTML = myLoans.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt personnel</td></tr>` : myLoans.map(k => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                        <td class="p-4">${escapeHtml(k.location)}</td>
+                        <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
+                        <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
+                        <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
+                    </tr>
+                `).join('');
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            checkUserSession();
-        });
+        window.addEventListener('DOMContentLoaded', () => { checkUserSession(); });
     </script>
 </body>
 </html>
