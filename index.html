@@ -1454,18 +1454,34 @@ function handleKeysSiteFilterChange(val) {
 
     const body = document.getElementById('history-table-body');
     if (!body) return;
-    body.innerHTML = paginatedItems.length === 0 ? `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique</td></tr>` : paginatedItems.map(h => `
-        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-            <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
-            <td class="p-4">${escapeHtml(h.location)}</td>
-            <td class="p-4">${escapeHtml(h.borrowed_by)}</td>
-            <td class="p-4 text-xs">${escapeHtml(h.borrowed_at)}</td>
-            <td class="p-4 text-xs italic">${escapeHtml(h.borrow_comment || '-')}</td>
-            <td class="p-4">${escapeHtml(h.returned_by || '-')}</td>
-            <td class="p-4 text-xs">${escapeHtml(h.returned_at)}</td>
-            <td class="p-4 text-xs italic">${escapeHtml(h.return_comment || '-')}</td>
-        </tr>
-    `).join('');
+    
+    body.innerHTML = paginatedItems.length === 0 ? `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique</td></tr>` : paginatedItems.map(h => {
+        // Tenter de retrouver le site associé via la clé correspondante si l'historique possède un code
+        const matchingKey = keys.find(k => k.code.toLowerCase() === (h.code || '').toLowerCase());
+        const siteObj = matchingKey ? sitesList.find(s => s.id === matchingKey.site_id) : null;
+        const siteName = siteObj ? siteObj.name : '';
+
+        // Badge discret du site sous l'endroit
+        const siteBadge = siteName 
+            ? `<span class="block text-[11px] text-slate-400 dark:text-slate-500 font-medium">${escapeHtml(siteName)}</span>` 
+            : '';
+
+        return `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 dark:text-slate-200">
+                <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
+                <td class="p-4">
+                    ${escapeHtml(h.location || '-')}
+                    ${siteBadge}
+                </td>
+                <td class="p-4">${escapeHtml(h.borrowed_by)}</td>
+                <td class="p-4 text-xs">${escapeHtml(h.borrowed_at)}</td>
+                <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400">${escapeHtml(h.borrow_comment || '-')}</td>
+                <td class="p-4">${escapeHtml(h.returned_by || '-')}</td>
+                <td class="p-4 text-xs">${escapeHtml(h.returned_at)}</td>
+                <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400">${escapeHtml(h.return_comment || '-')}</td>
+            </tr>
+        `;
+    }).join('');
 
     // --- RENDU DE LA PAGINATION HISTORIQUE ---
     const paginationEl = document.getElementById('history-pagination');
