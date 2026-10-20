@@ -1245,9 +1245,10 @@
             }
 
             keys.sort((a, b) => {
-                const locA = (a.location || '').toLowerCase();
-                const locB = (b.location || '').toLowerCase();
-                return locA.localeCompare(locB);
+                const locA = a.location || '';
+                const locB = b.location || '';
+                // Utilisation de numeric: true pour trier les nombres naturellement (ex: 2 avant 10)
+                return locA.localeCompare(locB, 'fr', { numeric: true, sensitivity: 'base' });
             });
 
             const myLoans = keys.filter(k => k.status === 'emprunte' && k.borrowed_by === currentUser?.email);
