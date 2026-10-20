@@ -191,10 +191,13 @@
                     </button>
                 </div>
 
-                <div class="relative max-w-md">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-keys" oninput="keysPage=1; render()" placeholder="Rechercher par code site ou lieu..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
-                </div>
+                <!-- Filtre par site et barre de recherche pour les clés -->
+<div class="flex flex-col sm:flex-row gap-3 mb-4">
+    <select id="keys-site-filter" onchange="handleKeysSiteFilterChange(this.value)" class="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm font-medium">
+        <!-- Rempli dynamiquement par le JS -->
+    </select>
+    <input type="text" id="search-keys" oninput="keysPage=1; render();" placeholder="Rechercher par code site ou stockage..." class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
+</div>
 
                 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <table class="w-full text-left border-collapse table-fixed sm:table-auto">
@@ -556,6 +559,41 @@
         const HISTORY_PAGE_SIZE = 50;
         let keysPage = 1;
         const KEYS_PAGE_SIZE = 20;
+
+        // Variable globale pour le filtre de site sur la liste des clés
+        let currentKeysSiteFilter = 'CLR'; // Stockera soit 'all', soit un ID de site
+
+        function updateKeysSiteFilterOptions() {
+    const select = document.getElementById('keys-site-filter');
+    if (!select) return;
+
+    // Trouver l'ID du site "CLR" s'il existe
+    const clrSite = sitesList.find(s => s.name === 'CLR');
+    
+    // Si le filtre actuel n'est pas défini ou n'existe plus, on se met par défaut sur "CLR" (ou le premier site)
+    if (!currentKeysSiteFilter && clrSite) {
+        currentKeysSiteFilter = clrSite.id;
+    }
+
+    let html = `<option value="all">Afficher tout</option>`;
+    sitesList.forEach(s => {
+        const isSelected = (currentKeysSiteFilter === s.id) || (!currentKeysSiteFilter && s.name === 'CLR');
+        html += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(s.name)}</option>`;
+    });
+    
+    select.innerHTML = html;
+    
+    // Si c'était la toute première initialisation sans filtre actif, s'aligner sur "CLR" par défaut
+    if (!currentKeysSiteFilter && clrSite) {
+        currentKeysSiteFilter = clrSite.id;
+    }
+}
+
+function handleKeysSiteFilterChange(val) {
+    currentKeysSiteFilter = val;
+    keysPage = 1;
+    render();
+}
 
         function escapeHtml(str) {
             if (!str) return '';
@@ -1445,92 +1483,116 @@
 }
 
         function render() {
-            document.getElementById('stat-total').innerText = keys.length;
-            document.getElementById('stat-available').innerText = keys.filter(k => k.status === 'disponible').length;
-            document.getElementById('stat-borrowed').innerText = keys.filter(k => k.status === 'emprunte').length;
+    // 1. Mettre à jour les options du select de filtre par site
+    updateKeysSiteFilterOptions();
 
-            keys.sort((a, b) => (a.location || '').localeCompare((b.location || ''), 'fr', { numeric: true, sensitivity: 'base' }));
+    document.getElementById('stat-total').innerText = keys.length;
+    document.getElementById('stat-available').innerText = keys.filter(k => k.status === 'disponible').length;
+    document.getElementById('stat-borrowed').innerText = keys.filter(k => k.status === 'emprunte').length;
 
-            const myLoans = keys.filter(k => k.status === 'emprunte' && k.borrowed_by === currentUser?.email);
-            const badge = document.getElementById('my-loans-badge');
-            if (myLoans.length > 0) { badge.innerText = myLoans.length; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+    keys.sort((a, b) => (a.location || '').localeCompare((b.location || ''), 'fr', { numeric: true, sensitivity: 'base' }));
 
-            const query = (document.getElementById('search-keys')?.value || '').toLowerCase().trim();
-            const filteredKeys = keys.filter(k => (k.code && k.code.toLowerCase().includes(query)) || (k.location && k.location.toLowerCase().includes(query)));
+    const myLoans = keys.filter(k => k.status === 'emprunte' && k.borrowed_by === currentUser?.email);
+    const badge = document.getElementById('my-loans-badge');
+    if (myLoans.length > 0) { badge.innerText = myLoans.length; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
 
-            const totalPages = Math.ceil(filteredKeys.length / KEYS_PAGE_SIZE) || 1;
-            if (keysPage > totalPages) keysPage = totalPages;
-            const startIndex = (keysPage - 1) * KEYS_PAGE_SIZE;
-            const paginatedKeys = filteredKeys.slice(startIndex, startIndex + KEYS_PAGE_SIZE);
+    const query = (document.getElementById('search-keys')?.value || '').toLowerCase().trim();
+    
+    // 2. Filtrer à la fois par site sélectionné et par texte de recherche
+    const filteredKeys = keys.filter(k => {
+        const matchesSite = (currentKeysSiteFilter === 'all') || (k.site_id === currentKeysSiteFilter);
+        const matchesQuery = (k.code && k.code.toLowerCase().includes(query)) || 
+                             (k.location && k.location.toLowerCase().includes(query)) ||
+                             (k.info && k.info.toLowerCase().includes(query)) ||
+                             (k.borrowed_by && k.borrowed_by.toLowerCase().includes(query));
+        return matchesSite && matchesQuery;
+    });
 
-            const tableBody = document.getElementById('keys-table-body');
-            if (tableBody) {
-                tableBody.innerHTML = paginatedKeys.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>` : paginatedKeys.map(k => {
-                    const lastHistory = lastReturnMap.get(k.code.toLowerCase());
-                    let returnInfo = '-';
-                    if (lastHistory && lastHistory.return_comment) {
-                        returnInfo = `<span class="font-medium">${escapeHtml(lastHistory.returned_at)}</span> : <span class="italic">"${escapeHtml(lastHistory.return_comment)}"</span>`;
-                    }
-                    return `
-                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                            <td class="p-3 sm:p-4"><div class="font-semibold">${escapeHtml(k.code)}</div>${k.info ? `<div class="text-xs text-slate-400">${escapeHtml(k.info)}</div>` : ''}</td>
-                            <td class="p-3 sm:p-4">${escapeHtml(k.location)}</td>
-                            <td class="p-3 sm:p-4">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}</span>
-                                <div class="mt-1">${k.status === 'disponible' ? `<button onclick="openBorrowModal('${k.id}')" class="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-500/30 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>` : currentUser ? `<button onclick="openReturnModal('${k.id}')" class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/30 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>` : ''}</div>
-                            </td>
-                            <td class="p-3 sm:p-4 hidden sm:table-cell text-xs">${returnInfo}</td>
-                            <td class="p-3 sm:p-4 text-right space-x-1">
-                                <button onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 p-1.5" title="Modifier"><i class="fa-solid fa-pen"></i></button>
-                                ${currentUser ? `<button onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1.5" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+    const totalPages = Math.ceil(filteredKeys.length / KEYS_PAGE_SIZE) || 1;
+    if (keysPage > totalPages) keysPage = totalPages;
+    const startIndex = (keysPage - 1) * KEYS_PAGE_SIZE;
+    const paginatedKeys = filteredKeys.slice(startIndex, startIndex + KEYS_PAGE_SIZE);
+
+    const tableBody = document.getElementById('keys-table-body');
+    if (tableBody) {
+        tableBody.innerHTML = paginatedKeys.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>` : paginatedKeys.map(k => {
+            const lastHistory = lastReturnMap.get(k.code.toLowerCase());
+            let returnInfo = '-';
+            if (lastHistory && lastHistory.return_comment) {
+                returnInfo = `<span class="font-medium">${escapeHtml(lastHistory.returned_at)}</span> : <span class="italic">"${escapeHtml(lastHistory.return_comment)}"</span>`;
             }
 
-            const loansBody = document.getElementById('loans-table-body');
-            if (loansBody) {
-                const borrowed = keys.filter(k => k.status === 'emprunte');
-                loansBody.innerHTML = borrowed.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt</td></tr>` : borrowed.map(k => `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
-                        <td class="p-4">${escapeHtml(k.borrowed_by)}</td>
-                        <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
-                        <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
-                        <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
-                    </tr>
-                `).join('');
-            }
+            // 3. Récupérer le nom du site et créer le badge discret si le filtre est sur "Afficher tout"
+            const siteObj = sitesList.find(s => s.id === k.site_id);
+            const siteName = siteObj ? siteObj.name : '';
+            const siteBadge = (currentKeysSiteFilter === 'all' && siteName) 
+                ? `<span class="block text-[11px] text-slate-400 dark:text-slate-500 font-medium">${escapeHtml(siteName)}</span>` 
+                : '';
 
-            const myLoansBody = document.getElementById('my-loans-table-body');
-            if (myLoansBody) {
-                myLoansBody.innerHTML = myLoans.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt personnel</td></tr>` : myLoans.map(k => `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
-                        <td class="p-4">${escapeHtml(k.location)}</td>
-                        <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
-                        <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
-                        <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
-                    </tr>
-                `).join('');
-            }
-            // --- RENDU DE LA PAGINATION CLÉS ---
-            const keysPaginationEl = document.getElementById('keys-pagination');
-            if (keysPaginationEl) {
-                if (totalPages <= 1) {
-                    keysPaginationEl.innerHTML = '';
-                } else {
-                    keysPaginationEl.innerHTML = `
-                        <span class="text-xs text-slate-500">Page ${keysPage} sur ${totalPages}</span>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="keysPage = Math.max(1, keysPage - 1); render();" ${keysPage === 1 ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Précédent</button>
-                            <button type="button" onclick="keysPage = Math.min(${totalPages}, keysPage + 1); render();" ${keysPage === totalPages ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Suivant</button>
-                        </div>
-                    `;
-                }
-            }
+            return `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                    <td class="p-3 sm:p-4"><div class="font-semibold">${escapeHtml(k.code)}</div>${k.info ? `<div class="text-xs text-slate-400">${escapeHtml(k.info)}</div>` : ''}</td>
+                    <td class="p-3 sm:p-4">
+                        ${escapeHtml(k.location)}
+                        ${siteBadge}
+                    </td>
+                    <td class="p-3 sm:p-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${k.status === 'disponible' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${k.status === 'disponible' ? 'Disponible' : 'Empruntée'}</span>
+                        <div class="mt-1">${k.status === 'disponible' ? `<button onclick="openBorrowModal('${k.id}')" class="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-500/30 px-3 py-1 rounded text-xs font-semibold transition">Emprunter</button>` : currentUser ? `<button onclick="openReturnModal('${k.id}')" class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/30 px-3 py-1 rounded text-xs font-semibold transition">Rendre</button>` : ''}</div>
+                    </td>
+                    <td class="p-3 sm:p-4 hidden sm:table-cell text-xs">${returnInfo}</td>
+                    <td class="p-3 sm:p-4 text-right space-x-1">
+                        <button onclick="openKeyModal('${k.id}')" class="text-slate-400 hover:text-indigo-600 p-1.5" title="Modifier"><i class="fa-solid fa-pen"></i></button>
+                        ${currentUser ? `<button onclick="deleteKey('${k.id}')" class="text-slate-400 hover:text-red-500 p-1.5" title="Supprimer"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    const loansBody = document.getElementById('loans-table-body');
+    if (loansBody) {
+        const borrowed = keys.filter(k => k.status === 'emprunte');
+        loansBody.innerHTML = borrowed.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt</td></tr>` : borrowed.map(k => `
+            <tr class="hover:bg-slate-50">
+                <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                <td class="p-4">${escapeHtml(k.borrowed_by)}</td>
+                <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
+                <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
+                <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
+            </tr>
+        `).join('');
+    }
+
+    const myLoansBody = document.getElementById('my-loans-table-body');
+    if (myLoansBody) {
+        myLoansBody.innerHTML = myLoans.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt personnel</td></tr>` : myLoans.map(k => `
+            <tr class="hover:bg-slate-50">
+                <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                <td class="p-4">${escapeHtml(k.location)}</td>
+                <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
+                <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
+                <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
+            </tr>
+        `).join('');
+    }
+
+    // --- RENDU DE LA PAGINATION CLÉS ---
+    const keysPaginationEl = document.getElementById('keys-pagination');
+    if (keysPaginationEl) {
+        if (totalPages <= 1) {
+            keysPaginationEl.innerHTML = '';
+        } else {
+            keysPaginationEl.innerHTML = `
+                <span class="text-xs text-slate-500">Page ${keysPage} sur ${totalPages}</span>
+                <div class="flex gap-2">
+                    <button type="button" onclick="keysPage = Math.max(1, keysPage - 1); render();" ${keysPage === 1 ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Précédent</button>
+                    <button type="button" onclick="keysPage = Math.min(${totalPages}, keysPage + 1); render();" ${keysPage === totalPages ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Suivant</button>
+                </div>
+            `;
         }
+    }
+}
 
         window.addEventListener('DOMContentLoaded', () => { checkUserSession(); });
     </script>
