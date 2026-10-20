@@ -1442,11 +1442,35 @@ function handleKeysSiteFilterChange(val) {
 
         function renderHistory() {
     const query = (document.getElementById('search-history')?.value || '').toLowerCase().trim();
-    const filteredHistory = historyList.filter(h => 
-        (h.code && h.code.toLowerCase().includes(query)) ||
-        (h.location && h.location.toLowerCase().includes(query)) ||
-        (h.borrowed_by && h.borrowed_by.toLowerCase().includes(query))
-    );
+    
+    const filteredHistory = historyList.filter(h => {
+        // Retrouver le site associé pour pouvoir chercher sur son nom
+        const matchingKey = keys.find(k => k.code.toLowerCase() === (h.code || '').toLowerCase());
+        const siteObj = matchingKey ? sitesList.find(s => s.id === matchingKey.site_id) : null;
+        const siteName = siteObj ? siteObj.name.toLowerCase() : '';
+
+        // Rassembler et normaliser tous les champs de la ligne d'historique
+        const code = (h.code || '').toLowerCase();
+        const location = (h.location || '').toLowerCase();
+        const borrowedBy = (h.borrowed_by || '').toLowerCase();
+        const borrowedAt = (h.borrowed_at || '').toLowerCase();
+        const borrowComment = (h.borrow_comment || '').toLowerCase();
+        const returnedBy = (h.returned_by || '').toLowerCase();
+        const returnedAt = (h.returned_at || '').toLowerCase();
+        const returnComment = (h.return_comment || '').toLowerCase();
+
+        // Vérifier si le texte recherché est présent dans l'un de ces champs ou dans le site
+        return code.includes(query) ||
+               location.includes(query) ||
+               borrowedBy.includes(query) ||
+               borrowedAt.includes(query) ||
+               borrow_comment.includes(query) ||
+               returnedBy.includes(query) ||
+               returnedAt.includes(query) ||
+               return_comment.includes(query) ||
+               siteName.includes(query);
+    });
+
     const totalPages = Math.ceil(filteredHistory.length / HISTORY_PAGE_SIZE) || 1;
     if (historyPage > totalPages) historyPage = totalPages;
     const startIndex = (historyPage - 1) * HISTORY_PAGE_SIZE;
@@ -1456,12 +1480,10 @@ function handleKeysSiteFilterChange(val) {
     if (!body) return;
     
     body.innerHTML = paginatedItems.length === 0 ? `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique</td></tr>` : paginatedItems.map(h => {
-        // Tenter de retrouver le site associé via la clé correspondante si l'historique possède un code
         const matchingKey = keys.find(k => k.code.toLowerCase() === (h.code || '').toLowerCase());
         const siteObj = matchingKey ? sitesList.find(s => s.id === matchingKey.site_id) : null;
         const siteName = siteObj ? siteObj.name : '';
 
-        // Badge discret du site sous l'endroit
         const siteBadge = siteName 
             ? `<span class="block text-[11px] text-slate-400 dark:text-slate-500 font-medium">${escapeHtml(siteName)}</span>` 
             : '';
