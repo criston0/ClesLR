@@ -561,32 +561,28 @@
         const KEYS_PAGE_SIZE = 20;
 
         // Variable globale pour le filtre de site sur la liste des clés
-        let currentKeysSiteFilter = 'CLR'; // Stockera soit 'all', soit un ID de site
+        let currentKeysSiteFilter = ''; // Sera initialisé automatiquement sur l'ID de CLR
 
         function updateKeysSiteFilterOptions() {
     const select = document.getElementById('keys-site-filter');
     if (!select) return;
 
-    // Trouver l'ID du site "CLR" s'il existe
+    // Trouver l'ID du site "CLR" dans la liste des sites
     const clrSite = sitesList.find(s => s.name === 'CLR');
     
-    // Si le filtre actuel n'est pas défini ou n'existe plus, on se met par défaut sur "CLR" (ou le premier site)
+    // Si aucun filtre n'est encore défini, on prend l'ID de CLR par défaut
     if (!currentKeysSiteFilter && clrSite) {
         currentKeysSiteFilter = clrSite.id;
     }
 
-    let html = `<option value="all">Afficher tout</option>`;
+    let html = `<option value="all" ${currentKeysSiteFilter === 'all' ? 'selected' : ''}>Afficher tout</option>`;
+    
     sitesList.forEach(s => {
-        const isSelected = (currentKeysSiteFilter === s.id) || (!currentKeysSiteFilter && s.name === 'CLR');
+        const isSelected = (currentKeysSiteFilter === s.id);
         html += `<option value="${s.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(s.name)}</option>`;
     });
     
     select.innerHTML = html;
-    
-    // Si c'était la toute première initialisation sans filtre actif, s'aligner sur "CLR" par défaut
-    if (!currentKeysSiteFilter && clrSite) {
-        currentKeysSiteFilter = clrSite.id;
-    }
 }
 
 function handleKeysSiteFilterChange(val) {
@@ -839,19 +835,25 @@ function handleKeysSiteFilterChange(val) {
         }
 
         async function loadSitesAndStorages() {
-            if (!supabaseClient) return;
-            const { data: sites } = await supabaseClient.from('sites').select('*').order('name');
-            if (sites) {
-                sitesList = sites;
-                if (!activeSiteId && sites.length > 0) {
-                    const defaultSite = sites.find(s => s.name === 'CLR') || sites[0];
-                    activeSiteId = defaultSite.id;
-                }
-            }
-            const { data: storages } = await supabaseClient.from('site_storages').select('*');
-            if (storages) siteStoragesList = storages;
-            renderSitesManagement();
+    if (!supabaseClient) return;
+    const { data: sites } = await supabaseClient.from('sites').select('*').order('name');
+    if (sites) {
+        sitesList = sites;
+        if (!activeSiteId && sites.length > 0) {
+            const defaultSite = sites.find(s => s.name === 'CLR') || sites[0];
+            activeSiteId = defaultSite.id;
         }
+    }
+    const { data: storages } = await supabaseClient.from('site_storages').select('*');
+    if (storages) siteStoragesList = storages;
+    
+    // --- AJOUTS : Charger aussi les clés et lancer le rendu global ---
+    const { data: keysData } = await supabaseClient.from('keys').select('*');
+    if (keysData) keys = keysData;
+
+    renderSitesManagement();
+    render(); // C'est cette fonction qui va initialiser le filtre sur "CLR" et afficher les clés !
+}
 
         async function loadKeysRealtime() {
             if (!supabaseClient) return;
