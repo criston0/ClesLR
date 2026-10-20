@@ -1168,10 +1168,28 @@
             const storage_number = parseInt(document.getElementById('storage-number-input').value);
             const capacity = parseInt(document.getElementById('storage-capacity-input').value);
 
+            // 1. Vérifier si ce type et ce numéro de boîte existent déjà pour ce site dans la liste en mémoire
+            const alreadyExists = siteStoragesList.some(st => 
+                st.site_id === activeSiteId && 
+                st.storage_type === storage_type && 
+                Number(st.storage_number) === storage_number
+            );
+
+            if (alreadyExists) {
+                alert(`Le stockage "${storage_type} ${storage_number}" existe déjà pour ce site !`);
+                return;
+            }
+
+            // 2. Insérer dans Supabase si tout est ok
             const { error } = await supabaseClient.from('site_storages').insert([{
                 site_id: activeSiteId, storage_type, storage_number, capacity
             }]);
-            if (error) { alert("Erreur : Ce numéro de boîte existe probablement déjà."); return; }
+    
+            if (error) { 
+                alert("Erreur lors de l'ajout de la boîte de stockage."); 
+                return; 
+            }
+    
             closeAddStorageModal();
             loadSitesAndStorages();
         }
