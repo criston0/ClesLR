@@ -1553,31 +1553,31 @@ function handleKeysSiteFilterChange(val) {
     }
 
     const loansBody = document.getElementById('loans-table-body');
-    if (loansBody) {
-        const borrowed = keys.filter(k => k.status === 'emprunte');
-        loansBody.innerHTML = borrowed.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt</td></tr>` : borrowed.map(k => `
-            <tr class="hover:bg-slate-50">
-                <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
-                <td class="p-4">${escapeHtml(k.borrowed_by)}</td>
-                <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
-                <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
-                <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
-            </tr>
-        `).join('');
-    }
+            if (loansBody) {
+                const borrowed = keys.filter(k => k.status === 'emprunte');
+                loansBody.innerHTML = borrowed.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt</td></tr>` : borrowed.map(k => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 dark:text-slate-200">
+                        <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                        <td class="p-4">${escapeHtml(k.borrowed_by)}</td>
+                        <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
+                        <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400">${escapeHtml(k.borrow_comment || '-')}</td>
+                        <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs transition">Rendre</button></td>
+                    </tr>
+                `).join('');
+            }
 
-    const myLoansBody = document.getElementById('my-loans-table-body');
-    if (myLoansBody) {
-        myLoansBody.innerHTML = myLoans.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt personnel</td></tr>` : myLoans.map(k => `
-            <tr class="hover:bg-slate-50">
-                <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
-                <td class="p-4">${escapeHtml(k.location)}</td>
-                <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
-                <td class="p-4 text-xs italic">${escapeHtml(k.borrow_comment || '-')}</td>
-                <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
-            </tr>
-        `).join('');
-    }
+            const myLoansBody = document.getElementById('my-loans-table-body');
+            if (myLoansBody) {
+                myLoansBody.innerHTML = myLoans.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucun emprunt personnel</td></tr>` : myLoans.map(k => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 dark:text-slate-200">
+                        <td class="p-4 font-semibold">${escapeHtml(k.code)}</td>
+                        <td class="p-4">${escapeHtml(k.location)}</td>
+                        <td class="p-4 text-xs">${escapeHtml(k.date)}</td>
+                        <td class="p-4 text-xs italic text-slate-500 dark:text-slate-400">${escapeHtml(k.borrow_comment || '-')}</td>
+                        <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs transition">Rendre</button></td>
+                    </tr>
+                `).join('');
+            }
 
     // --- RENDU DE LA PAGINATION CLÉS ---
     const keysPaginationEl = document.getElementById('keys-pagination');
