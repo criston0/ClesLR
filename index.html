@@ -1575,7 +1575,12 @@ function showConfirmModal(title, text, callback) {
 
             return `
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                    <td class="p-3 sm:p-4"><div class="font-semibold">${escapeHtml(k.code)}</div>${k.info ? `<div class="text-xs text-slate-400">${escapeHtml(k.info)}</div>` : ''}</td>
+                    <td class="p-3 sm:p-4">
+                        <div class="font-semibold">${escapeHtml(k.code)}</div>
+                        ${k.info ? `<div class="text-xs text-slate-400">${escapeHtml(k.info)}</div>` : ''}
+                        <!-- Affichage du dernier retour uniquement sur mobile -->
+                        ${lastHistory && lastHistory.return_comment ? `<div class="mt-1 text-[11px] text-slate-500 dark:text-slate-400 sm:hidden italic">Dernier retour : <span class="font-medium">${escapeHtml(lastHistory.returned_at)}</span> - "${escapeHtml(lastHistory.return_comment)}"</div>` : ''}
+                    </td>
                     <td class="p-3 sm:p-4">
                         ${escapeHtml(k.location)}
                         ${siteBadge}
