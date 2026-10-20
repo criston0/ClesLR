@@ -423,21 +423,20 @@
         <form onsubmit="handleCreateStorage(event)" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium mb-1">Type de stockage</label>
-                <select id="storage-type-input" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
+                <select id="storage-type-input" onchange="updateStorageNumberSuggestion()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
                     <option value="BAC">BAC</option>
                     <option value="Backlock">Backlock</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium mb-1">Numéro de la boîte (ex: 4)</label>
+                <label class="block text-sm font-medium mb-1">Numéro de la boîte</label>
                 <input type="number" id="storage-number-input" min="1" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Capacité (Nombre d'alvéoles)</label>
-                <input type="number" id="storage-capacity-input" min="1" required value="50" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
+                <input type="number" id="storage-capacity-input" min="1" required value="12" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
             </div>
             
-            <!-- CONTENEUR D'ERREUR DU MODAL -->
             <div id="storage-modal-error" class="hidden text-red-500 dark:text-red-400 text-xs font-semibold text-center bg-red-50 dark:bg-red-950/40 p-2 rounded border border-red-200 dark:border-red-900"></div>
 
             <div class="flex justify-end gap-2 pt-2">
@@ -447,7 +446,7 @@
         </form>
     </div>
 </div>
-
+    
     <!-- Modal Confirmation Générale -->
     <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-700 text-center space-y-4">
@@ -1166,32 +1165,79 @@
         }
 
         async function deleteSite(siteId) {
-            const site = sitesList.find(s => s.id === siteId);
-            const keysOnSite = keys.filter(k => k.site_id === siteId);
-            if (keysOnSite.length > 0) {
-                alert(`Impossible de supprimer "${site.name}" car ${keysOnSite.length} clé(s) y sont rattachées.`);
-                return;
-            }
-            showConfirmModal("Supprimer le site", `Supprimer le site "${site.name}" ?`, async () => {
-                await supabaseClient.from('sites').delete().eq('id', siteId);
-                loadSitesAndStorages();
-            });
-        }
+    const site = sitesList.find(s => s.id === siteId);
+    if (!site) return;
 
-        function openAddStorageModal() {
-            document.getElementById('storage-number-input').value = '1';
-            document.getElementById('storage-capacity-input').value = '50';
+    // 1. Vérifier s'il reste des clés rattachées à ce site
+    const keysOnSite = keys.filter(k => k.site_id === siteId);
+    if (keysOnSite.length > 0) {
+        document.getElementById('confirm-modal-action-btn').classList.add('hidden');
+        showConfirmModal(
+            "Suppression impossible", 
+            `Impossible de supprimer le site "${site.name}" car ${keysOnSite.length} clé(s) y sont encore rattachées.`, 
+            null
+        );
+        return;
+    }
+
+    // 2. Vérifier s'il reste des stockages (BACs / Backlocks) configurés sur ce site
+    const storagesOnSite = siteStoragesList.filter(st => st.site_id === siteId);
+    if (storagesOnSite.length > 0) {
+        document.getElementById('confirm-modal-action-btn').classList.add('hidden');
+        showConfirmModal(
+            "Suppression impossible", 
+            `Impossible de supprimer le site "${site.name}" car ${storagesOnSite.length} stockage(s) y sont encore configurés. Veuillez d'abord les supprimer.`, 
+            null
+        );
+        return;
+    }
+
+    // 3. Si tout est vide, autoriser la suppression après confirmation
+    document.getElementById('confirm-modal-action-btn').classList.remove('hidden');
+    showConfirmModal("Supprimer le site", `Voulez-vous vraiment supprimer le site "${site.name}" ?`, async () => {
+        const { error } = await supabaseClient.from('sites').delete().eq('id', siteId);
+        if (error) throw error;
+        loadSitesAndStorages();
+    });
+}
+
+        function updateStorageNumberSuggestion() {
+    const type = document.getElementById('storage-type-input').value;
+    const numberInput = document.getElementById('storage-number-input');
+    const capacityInput = document.getElementById('storage-capacity-input');
     
-            // Réinitialiser et masquer l'erreur à l'ouverture
-            const errDiv = document.getElementById('storage-modal-error');
-            if (errDiv) errDiv.classList.add('hidden');
+    // Filtrer les stockages de ce type pour le site actif
+    const storagesOfType = siteStoragesList.filter(st => st.site_id === activeSiteId && st.storage_type === type);
     
-            document.getElementById('add-storage-modal').classList.remove('hidden');
+    let nextNum = 1;
+    if (storagesOfType.length > 0) {
+        const numbers = storagesOfType.map(st => Number(st.storage_number)).sort((a, b) => a - b);
+        const maxNum = numbers[numbers.length - 1];
+        nextNum = maxNum + 1;
+        
+        // S'assurer que le numéro n'existe pas déjà (en cas de trous dans la numérotation)
+        while (numbers.includes(nextNum)) {
+            nextNum++;
         }
+    }
+    
+    numberInput.value = nextNum;
+    capacityInput.value = 12; // Capacité par défaut fixée à 12
+}
+        
+        function openAddStorageModal() {
+    document.getElementById('storage-type-input').value = 'BAC';
+    updateStorageNumberSuggestion(); // Calcule et pré-remplit le bon numéro et la capacité
+    
+    const errDiv = document.getElementById('storage-modal-error');
+    if (errDiv) errDiv.classList.add('hidden');
+    
+    document.getElementById('add-storage-modal').classList.remove('hidden');
+}
         
         function closeAddStorageModal() { 
-            document.getElementById('add-storage-modal').classList.add('hidden'); 
-        }
+    document.getElementById('add-storage-modal').classList.add('hidden'); 
+}
 
         async function handleCreateStorage(e) {
             e.preventDefault();
