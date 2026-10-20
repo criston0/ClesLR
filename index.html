@@ -1275,32 +1275,48 @@
         }
 
         function renderHistory() {
-            const query = (document.getElementById('search-history')?.value || '').toLowerCase().trim();
-            const filteredHistory = historyList.filter(h => 
-                (h.code && h.code.toLowerCase().includes(query)) ||
-                (h.location && h.location.toLowerCase().includes(query)) ||
-                (h.borrowed_by && h.borrowed_by.toLowerCase().includes(query))
-            );
-            const totalPages = Math.ceil(filteredHistory.length / HISTORY_PAGE_SIZE) || 1;
-            if (historyPage > totalPages) historyPage = totalPages;
-            const startIndex = (historyPage - 1) * HISTORY_PAGE_SIZE;
-            const paginatedItems = filteredHistory.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
+    const query = (document.getElementById('search-history')?.value || '').toLowerCase().trim();
+    const filteredHistory = historyList.filter(h => 
+        (h.code && h.code.toLowerCase().includes(query)) ||
+        (h.location && h.location.toLowerCase().includes(query)) ||
+        (h.borrowed_by && h.borrowed_by.toLowerCase().includes(query))
+    );
+    const totalPages = Math.ceil(filteredHistory.length / HISTORY_PAGE_SIZE) || 1;
+    if (historyPage > totalPages) historyPage = totalPages;
+    const startIndex = (historyPage - 1) * HISTORY_PAGE_SIZE;
+    const paginatedItems = filteredHistory.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
 
-            const body = document.getElementById('history-table-body');
-            if (!body) return;
-            body.innerHTML = paginatedItems.length === 0 ? `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique</td></tr>` : paginatedItems.map(h => `
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                    <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
-                    <td class="p-4">${escapeHtml(h.location)}</td>
-                    <td class="p-4">${escapeHtml(h.borrowed_by)}</td>
-                    <td class="p-4 text-xs">${escapeHtml(h.borrowed_at)}</td>
-                    <td class="p-4 text-xs italic">${escapeHtml(h.borrow_comment || '-')}</td>
-                    <td class="p-4">${escapeHtml(h.returned_by || '-')}</td>
-                    <td class="p-4 text-xs">${escapeHtml(h.returned_at)}</td>
-                    <td class="p-4 text-xs italic">${escapeHtml(h.return_comment || '-')}</td>
-                </tr>
-            `).join('');
+    const body = document.getElementById('history-table-body');
+    if (!body) return;
+    body.innerHTML = paginatedItems.length === 0 ? `<tr><td colspan="8" class="p-4 text-center text-slate-400">Aucun historique</td></tr>` : paginatedItems.map(h => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+            <td class="p-4 font-semibold">${escapeHtml(h.code)}</td>
+            <td class="p-4">${escapeHtml(h.location)}</td>
+            <td class="p-4">${escapeHtml(h.borrowed_by)}</td>
+            <td class="p-4 text-xs">${escapeHtml(h.borrowed_at)}</td>
+            <td class="p-4 text-xs italic">${escapeHtml(h.borrow_comment || '-')}</td>
+            <td class="p-4">${escapeHtml(h.returned_by || '-')}</td>
+            <td class="p-4 text-xs">${escapeHtml(h.returned_at)}</td>
+            <td class="p-4 text-xs italic">${escapeHtml(h.return_comment || '-')}</td>
+        </tr>
+    `).join('');
+
+    // --- RENDU DE LA PAGINATION HISTORIQUE ---
+    const paginationEl = document.getElementById('history-pagination');
+    if (paginationEl) {
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = '';
+        } else {
+            paginationEl.innerHTML = `
+                <span class="text-xs text-slate-500">Page ${historyPage} sur ${totalPages}</span>
+                <div class="flex gap-2">
+                    <button type="button" onclick="historyPage = Math.max(1, historyPage - 1); renderHistory();" ${historyPage === 1 ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Précédent</button>
+                    <button type="button" onclick="historyPage = Math.min(${totalPages}, historyPage + 1); renderHistory();" ${historyPage === totalPages ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Suivant</button>
+                </div>
+            `;
         }
+    }
+}
 
         function render() {
             document.getElementById('stat-total').innerText = keys.length;
@@ -1372,6 +1388,21 @@
                         <td class="p-4 text-right"><button onclick="openReturnModal('${k.id}')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Rendre</button></td>
                     </tr>
                 `).join('');
+            }
+            // --- RENDU DE LA PAGINATION CLÉS ---
+            const keysPaginationEl = document.getElementById('keys-pagination');
+            if (keysPaginationEl) {
+                if (totalPages <= 1) {
+                    keysPaginationEl.innerHTML = '';
+                } else {
+                    keysPaginationEl.innerHTML = `
+                        <span class="text-xs text-slate-500">Page ${keysPage} sur ${totalPages}</span>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="keysPage = Math.max(1, keysPage - 1); render();" ${keysPage === 1 ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Précédent</button>
+                            <button type="button" onclick="keysPage = Math.min(${totalPages}, keysPage + 1); render();" ${keysPage === totalPages ? 'disabled class="px-3 py-1 bg-slate-200 dark:bg-slate-800 text-slate-400 rounded text-xs cursor-not-allowed"' : 'class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs transition"'}>Suivant</button>
+                        </div>
+                    `;
+                }
             }
         }
 
