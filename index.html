@@ -1139,7 +1139,7 @@
                             <td class="p-3 font-semibold">${escapeHtml(st.storage_type)} ${st.storage_number}</td>
                             <td class="p-3 text-slate-600 dark:text-slate-300">${st.capacity} alvéoles</td>
                             <td class="p-3 text-right">
-                                <button type="button" onclick="deleteSpecificStorage('${st.id}', '${st.storage_type} ${st.storage_number}')" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                                <button type="button" onclick="deleteSpecificStorage('${st.id}', '${st.storage_type}', ${st.storage_number})" class="text-slate-400 hover:text-red-500 p-1" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `).join('');
@@ -1231,13 +1231,38 @@
             loadSitesAndStorages();
         }
 
-        function deleteSpecificStorage(storageId, storageName) {
-            showConfirmModal("Supprimer ce stockage", `Voulez-vous supprimer "${storageName}" ?`, async () => {
-                const { error } = await supabaseClient.from('site_storages').delete().eq('id', storageId);
-                if (error) throw error;
-                loadSitesAndStorages();
-            });
-        }
+        function deleteSpecificStorage(storageId, storageType, storageNumber) {
+    // 1. Trouver le site actif et le nom complet du stockage (ex: "BAC 2")
+    const activeSite = sitesList.find(s => s.id === activeSiteId);
+    const storageName = `${storageType} ${storageNumber}`;
+
+    // 2. Vérifier si des clés sont actuellement enregistrées dans ce bac / backlock précis
+    // On cherche si une clé possède une localisation qui commence par "BAC 2 /" ou "BAC 2" pour ce site
+    const keysInThisStorage = keys.filter(k => {
+        if (k.site_id !== activeSiteId || !k.location) return false;
+        // Exemple de format de location : "BAC 2 / 1" -> on vérifie si la location commence par "Type Numéro /" ou est égale
+        return k.location.startsWith(`${storageName} /`) || k.location === storageName;
+    });
+
+    if (keysInThisStorage.length > 0) {
+        showConfirmModal(
+            "Suppression impossible", 
+            `Impossible de supprimer "${storageName}" car ${keysInThisStorage.length} clé(s) y sont encore enregistrées. Veuillez d'abord les supprimer ou les déplacer.`, 
+            null // Pas de callback de suppression, on affiche juste l'avertissement bloquant
+        );
+        // Masquer le bouton de confirmation du modal si on veut en faire une simple alerte bloquante, ou utiliser un alert stylisé
+        document.getElementById('confirm-modal-action-btn').classList.add('hidden');
+        return;
+    }
+
+    // 3. S'il n'y a pas de clés, afficher le modal de confirmation habituel avec le bouton visible
+    document.getElementById('confirm-modal-action-btn').classList.remove('hidden');
+    showConfirmModal("Supprimer ce stockage", `Voulez-vous vraiment supprimer "${storageName}" ?`, async () => {
+        const { error } = await supabaseClient.from('site_storages').delete().eq('id', storageId);
+        if (error) throw error;
+        loadSitesAndStorages();
+    });
+}
 
         function renderMessages() {
             if (currentUser?.role !== 'admin') return;
