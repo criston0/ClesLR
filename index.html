@@ -405,7 +405,7 @@
             <form onsubmit="handleCreateSite(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Nom du site</label>
-                    <input type="text" id="new-site-name" required placeholder="Ex: Lyon Part-Dieu" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
+                    <input type="text" id="new-site-name" required placeholder="Ex: code  site NRA/NRO" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
                 </div>
                 <div id="site-modal-error" class="hidden text-red-500 text-xs font-semibold"></div>
                 <div class="flex justify-end gap-2 pt-2">
@@ -936,41 +936,61 @@
         }
 
         async function saveKey(e) {
-            e.preventDefault();
-            const id = document.getElementById('key-id').value;
-            const code = document.getElementById('key-code').value.trim();
-            const info = document.getElementById('key-info').value.trim();
-            const siteId = document.getElementById('key-site-select').value;
-            const errDiv = document.getElementById('key-modal-error');
-            errDiv.classList.add('hidden');
+    e.preventDefault();
+    const id = document.getElementById('key-id').value;
+    const code = document.getElementById('key-code').value.trim();
+    const info = document.getElementById('key-info').value.trim();
+    const siteId = document.getElementById('key-site-select').value;
+    const errDiv = document.getElementById('key-modal-error');
+    errDiv.classList.add('hidden');
 
-            if (!/^[0-9_]+$/.test(code)) {
-                errDiv.innerText = "Le code site ne doit contenir que des chiffres et _";
-                errDiv.classList.remove('hidden');
-                return;
-            }
+    // 1. Validation du format du code site
+    if (!/^[0-9_]+$/.test(code)) {
+        errDiv.innerText = "Le code site ne doit contenir que des chiffres et _";
+        errDiv.classList.remove('hidden');
+        return;
+    }
 
-            const type = document.getElementById('loc-type').value;
-            const num1 = document.getElementById('loc-num1').value;
-            const num2 = document.getElementById('loc-num2').value;
-            const location = `${type} ${num1} / ${num2}`;
+    const type = document.getElementById('loc-type').value;
+    const num1 = document.getElementById('loc-num1').value;
+    const num2 = document.getElementById('loc-num2').value;
+    const location = `${type} ${num1} / ${num2}`;
 
-            try {
-                const keyData = { code, location, site_id: siteId };
-                if (info) keyData.info = info;
+    // 2. Vérification des doublons (Code Site et Emplacement)
+    const codeLower = code.toLowerCase();
+    
+    // Vérification du doublon de Code Site (exclure la clé en cours d'édition)
+    const duplicateCode = keys.find(k => k.id !== id && k.code.toLowerCase() === codeLower);
+    if (duplicateCode) {
+        errDiv.innerText = `Le code site "${code}" existe déjà !`;
+        errDiv.classList.remove('hidden');
+        return;
+    }
 
-                if (id) {
-                    await supabaseClient.from('keys').update(keyData).eq('id', id);
-                } else {
-                    keyData.status = 'disponible';
-                    await supabaseClient.from('keys').insert([keyData]);
-                }
-                closeKeyModal();
-            } catch (err) {
-                errDiv.innerText = "Erreur lors de l'enregistrement.";
-                errDiv.classList.remove('hidden');
-            }
+    // Vérification du doublon d'emplacement sur le même site (exclure la clé en cours d'édition)
+    const duplicateLocation = keys.find(k => k.id !== id && k.site_id === siteId && k.location === location);
+    if (duplicateLocation) {
+        errDiv.innerText = `L'emplacement "${location}" est déjà occupé par une autre clé sur ce site !`;
+        errDiv.classList.remove('hidden');
+        return;
+    }
+
+    try {
+        const keyData = { code, location, site_id: siteId };
+        if (info) keyData.info = info;
+
+        if (id) {
+            await supabaseClient.from('keys').update(keyData).eq('id', id);
+        } else {
+            keyData.status = 'disponible';
+            await supabaseClient.from('keys').insert([keyData]);
         }
+        closeKeyModal();
+    } catch (err) {
+        errDiv.innerText = "Erreur lors de l'enregistrement de la clé.";
+        errDiv.classList.remove('hidden');
+    }
+}
 
         let currentConfirmCallback = null;
         function showConfirmModal(title, text, callback) {
