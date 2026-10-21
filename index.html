@@ -41,6 +41,7 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mot de passe</label>
                     <input type="password" id="auth-password" required placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100">
+                    <p id="password-hint" class="hidden text-[11px] text-slate-400 mt-1">Le mot de passe doit contenir au moins 8 caractères.</p>
                 </div>
                 
                 <div id="auth-error" class="hidden text-red-500 dark:text-red-400 text-sm text-center font-medium bg-red-50 dark:bg-red-950/40 p-2.5 rounded border border-red-200 dark:border-red-900"></div>
@@ -408,7 +409,7 @@
         <form onsubmit="handleCreateSite(event)" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium mb-1">Nom du site</label>
-                <input type="text" id="site-name-input" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
+                <input type="text" id="site-name-input" placeholder="Ex.: Code NRA/NRO,..." required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm">
             </div>
             
             <!-- CONTENEUR D'ERREUR DU MODAL SITE -->
@@ -750,6 +751,19 @@ function handleKeysSiteFilterChange(val) {
             document.getElementById('auth-toggle-link').innerText = isRegistering ? "Déjà un compte ? Se connecter" : "Pas encore de compte ? S'inscrire";
             document.getElementById('auth-error').classList.add('hidden');
             document.getElementById('auth-success').classList.add('hidden');
+            
+            const passwordInput = document.getElementById('auth-password');
+    const passwordHint = document.getElementById('password-hint');
+
+    if (isRegistering) {
+        // Active la contrainte et affiche l'indice uniquement à l'inscription
+        passwordInput.setAttribute('minlength', '8');
+        passwordHint.classList.remove('hidden');
+    } else {
+        // Retire la contrainte et masque l'indice à la connexion
+        passwordInput.removeAttribute('minlength');
+        passwordHint.classList.add('hidden');
+    }
         }
 
         async function handleAuthSubmit(e) {
@@ -790,11 +804,22 @@ function handleKeysSiteFilterChange(val) {
                     checkUserSession();
                 }
             } catch (err) {
-                errDiv.innerText = err.message || "Erreur d'authentification.";
-                errDiv.classList.remove('hidden');
-            } finally {
-                spinner.classList.add('hidden');
+            let message = err.message || "Erreur d'authentification.";
+            
+            // Traduire les messages d'erreur de Supabase en français
+            if (message === "Invalid login credentials") {
+                message = "E-mail ou mot de passe incorrect.";
+            } else if (message.includes("Password should be at least")) {
+                message = "Le mot de passe doit contenir au moins 8 caractères.";
+            } else if (message.includes("User already registered")) {
+                message = "Un compte existe déjà avec cet e-mail.";
             }
+
+            errDiv.innerText = message;
+            errDiv.classList.remove('hidden');
+        } finally {
+            spinner.classList.add('hidden');
+        }
         }
 
         async function checkUserSession() {
@@ -830,9 +855,13 @@ function handleKeysSiteFilterChange(val) {
         }
 
         async function logout() {
-            if (supabaseClient) await supabaseClient.auth.signOut();
-            location.reload();
-        }
+    if (supabaseClient) {
+        // Nettoyer tous les canaux temps réel actifs avant de se déconnecter
+        await supabaseClient.removeAllChannels();
+        await supabaseClient.auth.signOut();
+    }
+    location.reload();
+}
 
         async function loadSitesAndStorages() {
     if (!supabaseClient) return;
@@ -850,7 +879,8 @@ function handleKeysSiteFilterChange(val) {
     // --- AJOUTS : Charger aussi les clés et lancer le rendu global ---
     const { data: keysData } = await supabaseClient.from('keys').select('*');
     if (keysData) keys = keysData;
-
+    
+    updateKeysSiteFilterOptions();
     renderSitesManagement();
     render(); // C'est cette fonction qui va initialiser le filtre sur "CLR" et afficher les clés !
 }
@@ -913,19 +943,25 @@ function handleKeysSiteFilterChange(val) {
         function closeBorrowModal() { document.getElementById('borrow-modal').classList.add('hidden'); }
 
         async function confirmBorrowKey(e) {
-            e.preventDefault();
-            const id = document.getElementById('borrow-key-id').value;
-            const comment = document.getElementById('borrow-comment-input').value.trim();
-            if (!supabaseClient) return;
-            try {
-                const dateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-                const { error } = await supabaseClient.from('keys').update({ 
-                    status: 'emprunte', borrowed_by: currentUser.email, date: dateStr, borrow_comment: comment || null 
-                }).eq('id', id);
-                if (error) throw error;
-                closeBorrowModal();
-            } catch (err) { alert("Erreur d'emprunt"); }
-        }
+    e.preventDefault();
+    const id = document.getElementById('borrow-key-id').value;
+    const comment = document.getElementById('borrow-comment-input').value.trim();
+    const errDiv = document.getElementById('borrow-modal-error');
+    errDiv.classList.add('hidden');
+
+    if (!supabaseClient) return;
+    try {
+        const dateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+        const { error } = await supabaseClient.from('keys').update({ 
+            status: 'emprunte', borrowed_by: currentUser.email, date: dateStr, borrow_comment: comment || null 
+        }).eq('id', id);
+        if (error) throw error;
+        closeBorrowModal();
+    } catch (err) { 
+        errDiv.innerText = "Erreur lors de l'enregistrement de l'emprunt.";
+        errDiv.classList.remove('hidden');
+    }
+}
 
         function openReturnModal(id) {
             const k = keys.find(x => x.id === id);
@@ -938,26 +974,38 @@ function handleKeysSiteFilterChange(val) {
         function closeReturnModal() { document.getElementById('return-modal').classList.add('hidden'); }
 
         async function confirmReturnKey(e) {
-            e.preventDefault();
-            const id = document.getElementById('return-key-id').value;
-            const returnComment = document.getElementById('return-comment-input').value.trim();
-            if (!supabaseClient) return;
-            try {
-                const key = keys.find(k => k.id === id);
-                if (key) {
-                    const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
-                    await supabaseClient.from('loan_history').insert([{
-                        code: key.code, location: key.location, borrowed_by: key.borrowed_by || 'Inconnu',
-                        borrowed_at: key.date || '-', borrow_comment: key.borrow_comment || null,
-                        returned_at: returnDateStr, returned_by: currentUser.email, return_comment: returnComment || null
-                    }]);
-                    await supabaseClient.from('keys').update({ 
-                        status: 'disponible', borrowed_by: null, date: null, borrow_comment: null 
-                    }).eq('id', id);
-                }
-                closeReturnModal();
-            } catch (err) { alert("Erreur de retour"); }
+    e.preventDefault();
+    const id = document.getElementById('return-key-id').value;
+    const returnComment = document.getElementById('return-comment-input').value.trim();
+    const errDiv = document.getElementById('return-modal-error');
+    errDiv.classList.add('hidden');
+
+    if (!supabaseClient) return;
+    try {
+        const key = keys.find(k => k.id === id);
+        if (key) {
+            const returnDateStr = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+            
+            // Insertion dans l'historique
+            const historyRes = await supabaseClient.from('loan_history').insert([{
+                code: key.code, location: key.location, borrowed_by: key.borrowed_by || 'Inconnu',
+                borrowed_at: key.date || '-', borrow_comment: key.borrow_comment || null,
+                returned_at: returnDateStr, returned_by: currentUser.email, return_comment: returnComment || null
+            }]);
+            if (historyRes.error) throw historyRes.error;
+
+            // Mise à jour de la clé
+            const keyRes = await supabaseClient.from('keys').update({ 
+                status: 'disponible', borrowed_by: null, date: null, borrow_comment: null 
+            }).eq('id', id);
+            if (keyRes.error) throw keyRes.error;
         }
+        closeReturnModal();
+    } catch (err) { 
+        errDiv.innerText = "Erreur lors de l'enregistrement du retour.";
+        errDiv.classList.remove('hidden');
+    }
+}
 
         async function sendContactMessage(e) {
             e.preventDefault();
@@ -1144,6 +1192,7 @@ function showConfirmModal(title, text, callback) {
                 document.getElementById('modal-title').innerText = "Ajouter une clé";
             }
             document.getElementById('key-modal').classList.remove('hidden');
+            document.getElementById('key-code').focus();
         }
         
         function closeKeyModal() { document.getElementById('key-modal').classList.add('hidden'); }
@@ -1527,9 +1576,7 @@ function showConfirmModal(title, text, callback) {
 }
 
         function render() {
-    // 1. Mettre à jour les options du select de filtre par site
-    updateKeysSiteFilterOptions();
-
+    
     document.getElementById('stat-total').innerText = keys.length;
     document.getElementById('stat-available').innerText = keys.filter(k => k.status === 'disponible').length;
     document.getElementById('stat-borrowed').innerText = keys.filter(k => k.status === 'emprunte').length;
@@ -1655,6 +1702,18 @@ function showConfirmModal(title, text, callback) {
     }
 }
 
+        // Fermer n'importe quelle modale active avec la touche Échap
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeKeyModal();
+                closeAddSiteModal();
+                closeAddStorageModal();
+                closeConfirmModal();
+                closeBorrowModal();
+                closeReturnModal();
+                closeContactModal();
+            }
+        });
         window.addEventListener('DOMContentLoaded', () => { checkUserSession(); });
     </script>
 </body>
