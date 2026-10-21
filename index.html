@@ -1606,7 +1606,7 @@ function showConfirmModal(title, text, callback) {
 
     const tableBody = document.getElementById('keys-table-body');
     if (tableBody) {
-        tableBody.innerHTML = paginatedKeys.length === 0 ? `<tr><td colspan="5" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>` : paginatedKeys.map(k => {
+        tableBody.innerHTML = paginatedKeys.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-slate-400">Aucune clé trouvée</td></tr>` : paginatedKeys.map(k => {
             const lastHistory = lastReturnMap.get(k.code.toLowerCase());
             let returnInfo = '-';
             if (lastHistory && lastHistory.return_comment) {
