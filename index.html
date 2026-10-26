@@ -464,7 +464,7 @@
             <p id="confirm-modal-text" class="text-xs text-slate-500 dark:text-slate-400"></p>
             <div id="confirm-modal-error" class="hidden text-red-500 text-xs font-semibold bg-red-50 p-2 rounded"></div>
             <div class="flex justify-center gap-2 pt-2">
-                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm">Annuler</button>
+                <button type="button" id="confirm-modal-cancel-btn" onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm">Annuler</button>
                 <button type="button" id="confirm-modal-action-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium text-sm flex items-center gap-2">
                     <span>Confirmer</span>
                     <i id="confirm-spinner" class="hidden fa-solid fa-circle-notch fa-spin"></i>
@@ -1082,18 +1082,33 @@ function handleKeysSiteFilterChange(val) {
     }
 }
 
-        let currentConfirmCallback = null;
+let currentConfirmCallback = null;
 function showConfirmModal(title, text, callback) {
     document.getElementById('confirm-modal-title').innerText = title;
     document.getElementById('confirm-modal-text').innerText = text;
     document.getElementById('confirm-modal-error').classList.add('hidden');
     
-    // S'assurer que le bouton de confirmation est visible par défaut
-    document.getElementById('confirm-modal-action-btn').classList.remove('hidden');
+    const cancelBtn = document.getElementById('confirm-modal-cancel-btn');
+    const actionBtn = document.getElementById('confirm-modal-action-btn');
+
+    if (!callback) {
+        // Mode Alerte / Avertissement (un seul bouton "OK")
+        cancelBtn.innerText = "OK";
+        cancelBtn.className = "px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium text-sm transition w-full";
+        actionBtn.classList.add('hidden');
+    } else {
+        // Mode Confirmation classique (deux boutons: Annuler / Valider)
+        cancelBtn.innerText = "Annuler";
+        cancelBtn.className = "px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition";
+        actionBtn.classList.remove('hidden');
+        actionBtn.querySelector('span').innerText = "Valider";
+        actionBtn.className = "px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium text-sm flex items-center gap-2";
+    }
 
     currentConfirmCallback = callback;
     document.getElementById('confirm-modal').classList.remove('hidden');
 }
+
         function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); currentConfirmCallback = null; }
 
         document.getElementById('confirm-modal-action-btn').addEventListener('click', async () => {
@@ -1314,7 +1329,7 @@ function showConfirmModal(title, text, callback) {
         document.getElementById('confirm-modal-action-btn').classList.add('hidden');
         showConfirmModal(
             "Suppression impossible", 
-            `Impossible de supprimer le site "${site.name}" car ${storagesOnSite.length} stockage(s) y sont encore configurés. Veuillez d'abord les supprimer.`, 
+            `Impossible de supprimer le site "${site.name}" car ${storagesOnSite.length} stockage(s) y sont encore enregistrés. Veuillez d'abord les supprimer.`, 
             null
         );
         return;
@@ -1350,7 +1365,7 @@ function showConfirmModal(title, text, callback) {
     }
     
     numberInput.value = nextNum;
-    capacityInput.value = 12; // Capacité par défaut fixée à 12
+    capacityInput.value = 12; // Capacité alvéoles par défaut fixée à 12
 }
         
         function openAddStorageModal() {
